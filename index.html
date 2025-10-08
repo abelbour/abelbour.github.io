@@ -20,113 +20,164 @@
         <div class="long-card shadow">
             
             <section class="scroll-section" data-section="portada">
-                <div class="line-image">
-                    <img src="images/portada-line.webp" alt="">
+                <div class="fade-overlay top"></div>
+                <div class="scrollable-content">
+                    <div class="content-wrapper">
+                        <h2>Muriel & Abel</h2>
+                        <div class="media-container">
+                            <div class="line-image">
+                                <img src="images/portada-line.webp" alt="">
+                            </div>
+                            <div class="watercolor-image">
+                                <img src="images/portada-watercolor.webp" alt="">
+                            </div>
+                            <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
+                            <canvas class="hidden transition-canvas"></canvas>
+                        </div>
+                        <h1>Nuestra boda</h1>
+                        
+                    </div>
                 </div>
-                <div class="watercolor-image">
-                    <img src="images/portada-watercolor.webp" alt="">
-                </div>
-                <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
-                <canvas class="hidden transition-canvas"></canvas>
-                <div class="content-wrapper">
-                </div>
+                <div class="fade-overlay bottom"></div>
+                <button class="scroll-v-button up" aria-label="Scroll Up">&uarr;</button>
+                <button class="scroll-v-button down" aria-label="Scroll Down">&darr;</button>
             </section>
 
             <section class="scroll-section hidden" data-section="invitacion">
-                <div class="line-image">
-                    <img src="images/invitacion-line.png" alt="">
-                </div>
-                <div class="watercolor-image">
-                    <img src="images/invitacion-watercolor.webp" alt="">
-                </div>
-                <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
-                <canvas class="hidden transition-canvas"></canvas>
-                <div class="content-wrapper">
-                    <h2>Tu Invitación</h2>
-                    <h3 id="group-name"></h3>
-                    <p id="guest-names"></p>
-                    <p id="guest-count"></p>
-                    <div class="hidden" data-section="rsvp">
-                        <h2>Confirmar Asistencia</h2>
-                        <p>Por favor, confirmanos tu asistencia a la fiesta antes del 1 de noviembre.</p>
-                        <form id="rsvp-form">
-                            <button type="submit" class="btn" name="attending" value="yes">¡Sí, allí estaremos!</button>
-                            <button type="submit" class="btn btn-secondary" name="attending" value="no">No podremos asistir</button>
-                        </form>
+                <div class="fade-overlay top"></div>
+                <div class="scrollable-content">
+                    <div class="content-wrapper">
+                        <div class="media-container">
+                            <div class="line-image">
+                                <img src="images/invitacion-line.webp" alt="">
+                            </div>
+                            <div class="watercolor-image">
+                                <img src="images/invitacion-watercolor.webp" alt="">
+                            </div>
+                            <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
+                            <canvas class="hidden transition-canvas"></canvas>
+                        </div>
+                        <h2>Invitación para <span id="group-name"></span></h2>
+                        <p><strong>Incluídos: </strong><span id="guest-names"></span> <span id="guest-count"></span></p>
+                        <p><strong>Invitación a:</strong> Ceremonia Civil, Discurso de Bodas y Fiesta de Bodas.</p>
+                                                
+                        <div class="hidden" data-section="rsvp">
+                            <h2>Confirmar Asistencia</h2>
+                            <p>Por favor, confirmanos tu asistencia a la fiesta antes del 1 de noviembre.</p>
+                            <form id="rsvp-form">
+                                <button type="submit" class="btn" name="attending" value="yes">¡Sí, allí estaremos!</button>
+                                <button type="submit" class="btn btn-secondary" name="attending" value="no">No podremos asistir</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
+                <div class="fade-overlay bottom"></div>
+                <button class="scroll-v-button up" aria-label="Scroll Up">&uarr;</button>
+                <button class="scroll-v-button down" aria-label="Scroll Down">&darr;</button>
             </section>
 
             <section class="scroll-section hidden" data-section="civil">
-                <div class="line-image">
-                    <img src="images/civil-line.webp" alt="">
+                <div class="fade-overlay top"></div>
+                <div class="scrollable-content">
+                    <div class="content-wrapper">
+                        <div class="media-container">
+                            <div class="line-image">
+                                <img src="images/civil-line.webp" alt="">
+                            </div>
+                            <div class="watercolor-image">
+                                <img src="images/civil-watercolor.webp" alt="">
+                            </div>
+                            <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
+                            <canvas class="hidden transition-canvas"></canvas>
+                        </div>
+                        <h2>Ceremonia Civil</h2>
+                        <p><strong>Fecha:</strong> 20 de noviembre</p>
+                        <p><strong>Hora:</strong> 10:00</p>
+                        <p><strong>Lugar:</strong> Registro Civil de Santa Elena, ER</p>
+                    </div>
                 </div>
-                <div class="watercolor-image">
-                    <img src="images/civil-watercolor.webp" alt="">
-                </div>
-                <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
-                <canvas class="hidden transition-canvas"></canvas>
-                <div class="content-wrapper">
-                    <h2>Ceremonia Civil</h2>
-                    <p><strong>Fecha:</strong> 20 de noviembre</p>
-                    <p><strong>Hora:</strong> 10:00</p>
-                    <p><strong>Lugar:</strong> Registro Civil de Santa Elena, ER</p>
-                </div>
+                <div class="fade-overlay bottom"></div>
+                <button class="scroll-v-button up" aria-label="Scroll Up">&uarr;</button>
+                <button class="scroll-v-button down" aria-label="Scroll Down">&darr;</button>
             </section>
 
             <section class="scroll-section hidden" data-section="discurso">
-                <div class="line-image">
-                    <img src="images/discurso-line.png" alt="">
-                </div>
-                <div class="watercolor-image">
-                    <img src="images/discurso-watercolor.webp" alt="">
-                </div>
-                <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
-                <canvas class="hidden transition-canvas"></canvas>
-                <div class="content-wrapper">
-                    <h2>Discurso de Bodas</h2>
-                    <p><strong>Fecha:</strong> 21 de noviembre</p>
-                    <p><strong>Hora:</strong> 10:00</p>
-                    <p><strong>Lugar:</strong> Salón del Reino de los Testigos de Jehová, Oro Verde, ER</p>
-                    <div class="hidden" data-section="zoom">
-                        <h2>Transmisión Virtual</h2>
-                        <p>Para que nos acompañes a la distancia.</p>
-                        <p><a href="[Link Zoom]">Unirse a la reunión por Zoom</a></p>
+                <div class="fade-overlay top"></div>
+                <div class="scrollable-content">
+                    <div class="content-wrapper">
+                        <div class="media-container">
+                            <div class="line-image">
+                                <img src="images/discurso-line.png" alt="">
+                            </div>
+                            <div class="watercolor-image">
+                                <img src="images/discurso-watercolor.webp" alt="">
+                            </div>
+                            <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
+                            <canvas class="hidden transition-canvas"></canvas>
+                        </div>
+                        <h2>Discurso de Bodas</h2>
+                        <p><strong>Fecha:</strong> 21 de noviembre</p>
+                        <p><strong>Hora:</strong> 10:00</p>
+                        <p><strong>Lugar:</strong> Salón del Reino de los Testigos de Jehová, Oro Verde, ER</p>
+                        <div class="hidden" data-section="zoom">
+                            <h2>Transmisión en vivo</h2>
+                            <p>Para que nos acompañes a la distancia.</p>
+                            <p>Se va a transmitir por esta misma página</p>
+                        </div>
                     </div>
                 </div>
+                <div class="fade-overlay bottom"></div>
+                <button class="scroll-v-button up" aria-label="Scroll Up">&uarr;</button>
+                <button class="scroll-v-button down" aria-label="Scroll Down">&darr;</button>
             </section>
 
             <section class="scroll-section hidden" data-section="fiesta">
-                <div class="line-image">
-                    <img src="images/fiesta-line.png" alt="">
+                <div class="fade-overlay top"></div>
+                <div class="scrollable-content">
+                    <div class="content-wrapper">
+                        <div class="media-container">
+                            <div class="line-image">
+                                <img src="images/fiesta-line.png" alt="">
+                            </div>
+                            <div class="watercolor-image">
+                                <img src="images/fiesta-watercolor.webp" alt="">
+                            </div>
+                            <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
+                            <canvas class="hidden transition-canvas"></canvas>
+                        </div>
+                        <h2>Fiesta de Bodas</h2>
+                        <p><strong>Fecha:</strong> 21 de noviembre</p>
+                        <p><strong>Hora:</strong> 12:00</p>
+                        <p><strong>Lugar:</strong> Ituzaingo S/N, Paraná, ER</p>
+                    </div>
                 </div>
-                <div class="watercolor-image">
-                    <img src="images/fiesta-watercolor.webp" alt="">
-                </div>
-                <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
-                <canvas class="hidden transition-canvas"></canvas>
-                <div class="content-wrapper">
-                    <h2>Fiesta de Bodas</h2>
-                    <p><strong>Fecha:</strong> 21 de noviembre</p>
-                    <p><strong>Hora:</strong> 12:00</p>
-                    <p><strong>Lugar:</strong> Ituzaingo S/N, Paraná, ER</p>
-                </div>
+                <div class="fade-overlay bottom"></div>
+                <button class="scroll-v-button up" aria-label="Scroll Up">&uarr;</button>
+                <button class="scroll-v-button down" aria-label="Scroll Down">&darr;</button>
             </section>
             
             <section class="scroll-section" data-section="contratapa">
-                <div class="line-image">
-                    <img src="images/contratapa-line.png" alt="">
+                <div class="fade-overlay top"></div>
+                <div class="scrollable-content">
+                    <div class="content-wrapper" style="border-left: none !important;">
+                        <div class="media-container">
+                            <div class="line-image">
+                                <img src="images/contratapa-line.png" alt="">
+                            </div>
+                            <div class="watercolor-image">
+                                <img src="images/contratapa-watercolor.webp" alt="">
+                            </div>
+                            <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
+                            <canvas class="hidden transition-canvas"></canvas>
+                        </div>
+                        <h2>¡Te esperamos!</h2>
+                        <p>Con mucho cariño,</p>
+                        <h3>Muriel y Abel</h3>
+                    </div>
                 </div>
-                <div class="watercolor-image">
-                    <img src="images/contratapa-watercolor.webp" alt="">
-                </div>
-                <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
-                <canvas class="hidden transition-canvas"></canvas>
-                <div class="content-wrapper" style="border-left: none !important;">
-                    <h2>¡Te esperamos!</h2>
-                    <p>Con mucho cariño,</p>
-                    <h3>Muriel y Abel</h3>
-                </div>
+                <div class="fade-overlay bottom"></div>
+                <button class="scroll-v-button up" aria-label="Scroll Up">&uarr;</button>
+                <button class="scroll-v-button down" aria-label="Scroll Down">&darr;</button>
             </section>
         </div>
     </div>

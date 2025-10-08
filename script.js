@@ -13,7 +13,66 @@ document.addEventListener('DOMContentLoaded', () => {
         setupNavigation(); // Restore the call
     }
     setupSectionAnimations();
+    setupVerticalScrolling();
 });
+
+function setupVerticalScrolling() {
+    document.querySelectorAll('.scroll-section').forEach(section => {
+        const scrollableContent = section.querySelector('.scrollable-content');
+        const upButton = section.querySelector('.scroll-v-button.up');
+        const downButton = section.querySelector('.scroll-v-button.down');
+        const topFade = section.querySelector('.fade-overlay.top');
+        const bottomFade = section.querySelector('.fade-overlay.bottom');
+
+        if (!scrollableContent || !upButton || !downButton || !topFade || !bottomFade) return;
+
+        const checkOverflow = () => {
+            const hasOverflow = scrollableContent.scrollHeight > scrollableContent.clientHeight;
+
+            if (hasOverflow) {
+                scrollableContent.addEventListener('scroll', handleScroll);
+                handleScroll(); 
+            } else {
+                scrollableContent.removeEventListener('scroll', handleScroll);
+                upButton.classList.remove('visible');
+                downButton.classList.remove('visible');
+                topFade.style.opacity = '0';
+                bottomFade.style.opacity = '0';
+            }
+        };
+
+        const handleScroll = () => {
+            const scrollTop = scrollableContent.scrollTop;
+            const scrollHeight = scrollableContent.scrollHeight;
+            const clientHeight = scrollableContent.clientHeight;
+
+            const isAtTop = scrollTop === 0;
+            const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1; 
+
+            upButton.classList.toggle('visible', !isAtTop);
+            downButton.classList.toggle('visible', !isAtBottom);
+            
+            topFade.style.opacity = isAtTop ? '0' : '1';
+            bottomFade.style.opacity = isAtBottom ? '0' : '1';
+        };
+
+        upButton.addEventListener('click', () => {
+            scrollableContent.scrollBy({ top: -scrollableContent.clientHeight * 0.8, behavior: 'smooth' });
+        });
+
+        downButton.addEventListener('click', () => {
+            scrollableContent.scrollBy({ top: scrollableContent.clientHeight * 0.8, behavior: 'smooth' });
+        });
+
+        const resizeObserver = new ResizeObserver(checkOverflow);
+        resizeObserver.observe(scrollableContent);
+        
+        const mutationObserver = new MutationObserver(checkOverflow);
+        mutationObserver.observe(scrollableContent, { childList: true, subtree: true });
+
+        checkOverflow();
+    });
+}
 
 function parseCsvRow(rowString) {
     const result = [];
@@ -133,8 +192,8 @@ async function fetchGuestData(code, url) {
         const guestRow = dataRows.find(row => row[colIndices.codigo] === code);
 
         if (guestRow) {
-            document.getElementById('group-name').textContent = `¡Hola, ${guestRow[colIndices.nombre]}!`;
-            document.getElementById('guest-names').textContent = `Invitación para: ${guestRow[colIndices.invitados]}`;
+            document.getElementById('group-name').textContent = `${guestRow[colIndices.nombre]}`;
+            document.getElementById('guest-names').textContent = `${guestRow[colIndices.invitados]}`;
             const guestCount = guestRow[colIndices.cantidad];
             if (guestCount) {
                 document.getElementById('guest-count').textContent = `(${guestCount} persona${guestCount > 1 ? 's' : ''})`;
