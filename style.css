@@ -205,9 +205,37 @@ p {
     mask-repeat: no-repeat;
     -webkit-mask-mode: luminance;
     mask-mode: luminance;
-    mix-blend-mode: darken;
+    /* mix-blend-mode: darken; */
     
 }
+[data-section="portada"] .line-image img,
+[data-section="portada"] .watercolor-image img,
+[data-section="portada"] .transition-video,
+[data-section="portada"] .transition-canvas {
+    object-position: top;
+    height: 45%;
+    object-fit: contain;
+}
+
+[data-section="portada"] .watercolor-image img {
+    mix-blend-mode: normal !important;
+}
+
+
+[data-section="civil"] .line-image img,
+[data-section="civil"] .watercolor-image img,
+[data-section="civil"] .transition-video,
+[data-section="civil"] .transition-canvas {
+    object-position: top;
+    height: 45%;
+    object-fit: contain;
+}
+
+[data-section="civil"] .watercolor-image img {
+    mix-blend-mode: normal !important;
+}
+
+
 
 /* [data-section="contratapa"] .content-wrapper {
     position: relative;
