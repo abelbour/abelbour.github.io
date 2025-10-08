@@ -1,0 +1,226 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    overflow-y: hidden;
+    background-color: #f0e9e4;
+    font-family: 'Cabin', sans-serif; 
+    padding:0;
+}
+
+
+
+body, html {
+    height: 100%;
+    margin: 0;
+    overflow: hidden; /* Prevent body from scrolling */
+    background-color: #f0e9e4;
+    font-family: 'Cabin', sans-serif; 
+    padding:0;
+}
+
+.scroll-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+}
+
+/* Hide the scrollbar from the container */
+.scroll-container::-webkit-scrollbar { display: none; }
+.scroll-container { -ms-overflow-style: none; scrollbar-width: none; }
+
+.long-card {
+    width: 640vw;
+    height: 90vh;
+    display: flex;
+    /* Overflow is now handled by the parent */
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    background-color: #fff;
+    /* The margin now correctly creates the visual spacing */
+    margin: 0 10vw; 
+}
+
+.scroll-section {
+    width: 80vw;
+    height: 86.75vh;
+    flex-shrink: 0;
+    scroll-snap-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 1rem;
+    overflow-y: auto;
+    border-left:2px solid #f0e9e4;
+    position: relative;
+    overflow: hidden;
+}
+
+.content-wrapper {
+    max-width: 600px;
+    color: #5c544d;
+    position: relative;
+    z-index: 2;
+}
+
+h2, h3 {
+    font-family: 'Parisienne', cursive;
+    color: #8c7a6b;
+}
+
+h2 {
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+}
+
+h3 {
+    font-size: 2.5rem;
+}
+
+p {
+    font-family: 'Cabin', sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.7;
+}
+
+/* Navigation Elements */
+.scroll-button {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 1px solid #e0d7ce;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    color: #8c7a6b;
+    cursor: pointer;
+    transition: background-color 0.2s, opacity 0.2s;
+    
+}
+
+.scroll-button:hover {
+    background-color: #fff;
+}
+
+.scroll-button:disabled {
+    opacity: 0; display:none;
+}
+
+.scroll-button.left {
+    left: 20px;
+}
+
+.scroll-button.right {
+    right: 20px;
+}
+
+.indicator-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 10px;
+}
+
+.indicator-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #ccc0b9;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.indicator-dot.active {
+    background-color: #8c7a6b;
+}
+
+/* Button styles */
+.btn, .btn-secondary {
+    font-family: 'Cabin', sans-serif;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    text-decoration: none;
+    border: 1px solid #8c7a6b;
+    background-color: #8c7a6b;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.btn:hover {
+    background-color: #a28d7a;
+    border-color: #a28d7a;
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: #8c7a6b;
+}
+
+.btn-secondary:hover {
+    background-color: #f0e9e4;
+}
+
+/* [data-section="contratapa"] {
+    position: relative;
+    overflow: hidden;
+} */
+
+.line-image, .watercolor-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.line-image img, .watercolor-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: bottom;
+}
+
+.watercolor-image {
+    visibility: hidden;
+    -webkit-mask-size: cover;
+    mask-size: cover;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-mode: luminance;
+    mask-mode: luminance;
+}
+
+/* [data-section="contratapa"] .content-wrapper {
+    position: relative;
+    z-index: 2;
+} */
+
+
+@media (max-width: 768px) {
+    h2 {
+        font-size: 2.8rem;
+    }
+    p {
+        font-size: 1rem;
+    }
+    .scroll-button {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+}

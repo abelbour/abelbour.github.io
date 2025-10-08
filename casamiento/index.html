@@ -1,1 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuestra Boda</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cabin&family=Parisienne&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="scroll-container">
+        <!-- The long-card is the single, wide element that scrolls -->
+        <div class="long-card shadow">
+            
+            <section class="scroll-section" data-section="portada">
+                <div class="line-image">
+                    <img src="images/portada-watercolor.webp" alt="">
+                </div>
+                <div class="watercolor-image">
+                    <img src="images/portada-line.png" alt="">
+                </div>
+                <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
+                <canvas class="hidden transition-canvas"></canvas>
+                <div class="content-wrapper">
+                    <h2>Nuestra Boda</h2>
+                    <p>¡Nos casamos!</p>
+                    <p>Y queremos compartir este día tan especial con vos.</p>
+                </div>
+            </section>
 
+            <section class="scroll-section hidden" data-section="invitacion">
+                <div class="line-image">
+                    <img src="images/invitacion-watercolor.webp" alt="">
+                </div>
+                <div class="watercolor-image">
+                    <img src="images/invitacion-line.png" alt="">
+                </div>
+                <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
+                <canvas class="hidden transition-canvas"></canvas>
+                <div class="content-wrapper">
+                    <h2>Tu Invitación</h2>
+                    <h3 id="group-name"></h3>
+                    <p id="guest-names"></p>
+                    <p id="guest-count"></p>
+                    <div class="hidden" data-section="rsvp">
+                        <h2>Confirmar Asistencia</h2>
+                        <p>Por favor, confirmanos tu asistencia a la fiesta antes del 1 de noviembre.</p>
+                        <form id="rsvp-form">
+                            <button type="submit" class="btn" name="attending" value="yes">¡Sí, allí estaremos!</button>
+                            <button type="submit" class="btn btn-secondary" name="attending" value="no">No podremos asistir</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <section class="scroll-section hidden" data-section="civil">
+                <div class="line-image">
+                    <img src="images/civil-watercolor.webp" alt="">
+                </div>
+                <div class="watercolor-image">
+                    <img src="images/civil-line.png" alt="">
+                </div>
+                <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
+                <canvas class="hidden transition-canvas"></canvas>
+                <div class="content-wrapper">
+                    <h2>Ceremonia Civil</h2>
+                    <p><strong>Fecha:</strong> 20 de noviembre</p>
+                    <p><strong>Hora:</strong> 10:00</p>
+                    <p><strong>Lugar:</strong> Registro Civil de Santa Elena, ER</p>
+                </div>
+            </section>
+
+            <section class="scroll-section hidden" data-section="discurso">
+                <div class="line-image">
+                    <img src="images/discurso-watercolor.webp" alt="">
+                </div>
+                <div class="watercolor-image">
+                    <img src="images/discurso-line.png" alt="">
+                </div>
+                <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
+                <canvas class="hidden transition-canvas"></canvas>
+                <div class="content-wrapper">
+                    <h2>Discurso de Bodas</h2>
+                    <p><strong>Fecha:</strong> 21 de noviembre</p>
+                    <p><strong>Hora:</strong> 10:00</p>
+                    <p><strong>Lugar:</strong> Salón del Reino de los Testigos de Jehová, Oro Verde, ER</p>
+                    <div class="hidden" data-section="zoom">
+                        <h2>Transmisión Virtual</h2>
+                        <p>Para que nos acompañes a la distancia.</p>
+                        <p><a href="[Link Zoom]">Unirse a la reunión por Zoom</a></p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="scroll-section hidden" data-section="fiesta">
+                <div class="line-image">
+                    <img src="images/fiesta-watercolor.webp" alt="">
+                </div>
+                <div class="watercolor-image">
+                    <img src="images/fiesta-line.png" alt="">
+                </div>
+                <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
+                <canvas class="hidden transition-canvas"></canvas>
+                <div class="content-wrapper">
+                    <h2>Fiesta de Bodas</h2>
+                    <p><strong>Fecha:</strong> 21 de noviembre</p>
+                    <p><strong>Hora:</strong> 12:00</p>
+                    <p><strong>Lugar:</strong> Ituzaingo S/N, Paraná, ER</p>
+                </div>
+            </section>
+            
+            <section class="scroll-section" data-section="contratapa">
+                <div class="line-image">
+                    <img src="images/contratapa-watercolor.webp" alt="">
+                </div>
+                <div class="watercolor-image">
+                    <img src="images/contratapa-line.png" alt="">
+                </div>
+                <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
+                <canvas class="hidden transition-canvas"></canvas>
+                <div class="content-wrapper" style="border-left: none !important;">
+                    <h2>¡Te esperamos!</h2>
+                    <p>Con mucho cariño,</p>
+                    <h3>Muriel y Abel</h3>
+                </div>
+            </section>
+        </div>
+    </div>
+
+
+
+    <button class="scroll-button left" aria-label="Previous Section">&lt;</button>
+    <button class="scroll-button right" aria-label="Next Section">&gt;</button>
+    <div class="indicator-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
