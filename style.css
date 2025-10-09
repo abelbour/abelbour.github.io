@@ -3,18 +3,8 @@ body, html {
     margin: 0;
     overflow-y: hidden;
     background-color: #f0e9e4;
-    font-family: 'Cabin', sans-serif; 
-    padding:0;
-}
-
-
-
-body, html {
-    height: 100%;
-    margin: 0;
-    overflow: hidden; /* Prevent body from scrolling */
-    background-color: #f0e9e4;
-    font-family: 'Cabin', sans-serif; 
+    font-family: 'Overlock', sans-serif; 
+    color: rgb(56, 56, 56);
     padding:0;
 }
 
@@ -38,8 +28,8 @@ body, html {
     height: 90vh;
     display: flex;
     /* Overflow is now handled by the parent */
-    border-radius: 0.5rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    /* border-radius: 0.5rem; */
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.274);
     background-color: #fff;
     /* The margin now correctly creates the visual spacing */
     margin: 0 10vw; 
@@ -54,11 +44,17 @@ body, html {
     display: flex;
     justify-content: center;
     text-align: center;
-    border-left:2px solid #f0e9e4;
+    border-left:3px solid #ffffff;
+    border-top:3px solid #ffffff;
+    border-right:3px solid #eeeeee;
+    border-bottom:3px solid #eeeeee;
     background-image: url('images/paper.webp');
     position: relative;
     overflow: hidden;
+
+
 }
+
 
 .scrollable-content {
     width: 100%;
@@ -70,6 +66,21 @@ body, html {
     display: flex;
     flex-direction: column;
     align-items: center; /* Horizontally center the content-wrapper */
+    .scroll-section {
+    width: 80vw;
+    height: 100%;
+    flex-shrink: 0;
+    scroll-snap-align: center;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    /* border-left:2px solid #f0e9e4; */
+    background-image: url('images/paper.webp');
+    position: relative;
+    overflow: hidden;
+
+}
+    
 }
 
 .scrollable-content::-webkit-scrollbar {
@@ -167,17 +178,20 @@ body, html {
 
 h1, h2, h3 {
     font-family: 'Parisienne', serif;
-     background: linear-gradient(to bottom, #8d7c56 25%, #7c7151 50%, #756540 75%); 
+     /* background: linear-gradient(to bottom, #8d7c56 25%, #7c7151 50%, #756540 75%); 
     -webkit-background-clip: text;
-    background-clip: text;
+    background-clip: text; */
     /* -webkit-text-fill-color: transparent; */
-    color: #dfc77b;
+    /* position: relative;
+    z-index: 1; */
+    color: #dbc5b7;
         text-shadow: 
-		-1px -1px 2px #9c844c, 
-		1px 1px 2px #fde4a4, 
-		-1px -1px 3px rgba(0, 0, 0, 0.2),
-        2px 2px 3px rgb(255, 255, 255);
+		-0.25px -0.75px 1.5px #555555, 
+		1px 1.5px 2px #ffffff, 
+		-2px -2px 5px rgba(0, 0, 0, 0.2),
+        2px 2px 5px rgb(235, 235, 235);
 }
+
 
 h1 {
     font-size: 4.5rem;
@@ -196,7 +210,8 @@ h3 {
 p {
     font-family: 'Cabin', sans-serif;
     font-size: 1.1rem;
-    line-height: 1.7;
+    line-height: 1.2;
+    color: rgb(136, 135, 135);
 }
 
 /* Navigation Elements */
@@ -299,6 +314,7 @@ p {
 }
 
 [data-section="invitacion"] .media-container {
+    
 
 }
 
