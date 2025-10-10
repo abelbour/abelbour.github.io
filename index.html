@@ -16,6 +16,7 @@
     </style>
 </head>
 <body>
+    <div id="loading-spinner"></div>
     <div class="scroll-container">
         <!-- The long-card is the single, wide element that scrolls -->
         <div class="long-card shadow">
@@ -46,6 +47,19 @@
                 <button class="scroll-v-button down" aria-label="Scroll Down">&darr;</button>
             </section>
 
+            <section class="scroll-section hidden" data-section="no-code">
+                <div class="fade-overlay top"></div>
+                <div class="scrollable-content">
+                    <div class="content-wrapper v-center">
+                        <h2 class="emboss">No encontramos tu invitación</h2>
+                        <p>Si fuiste invitado, es posible que no hayas ingresado la dirección correctamente. Por favor, revisá la invitación que te enviamos y usá el enlace que se encuentra allí. Gracias.</p>
+                    </div>
+                </div>
+                <div class="fade-overlay bottom"></div>
+                <button class="scroll-v-button up" aria-label="Scroll Up">&uarr;</button>
+                <button class="scroll-v-button down" aria-label="Scroll Down">&darr;</button>
+            </section>
+
             <section class="scroll-section hidden" data-section="invitacion">
                 <div class="fade-overlay top"></div>
                 <div class="scrollable-content">
@@ -60,13 +74,14 @@
                             <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
                             <canvas class="hidden transition-canvas"></canvas> -->
                         <!-- </div> -->
-                        <h2 class="emboss">Invitación para <span id="group-name"></span></h2>
-                        <p><strong>Incluídos: </strong><span id="guest-names"></span> <span id="guest-count"></span></p>
-                        <p><strong>Invitación a:</strong> Ceremonia Civil, Discurso de Bodas y Fiesta de Bodas.</p>
+                        <h2 class="emboss">Invitación para<br><span id="group-name"></span></h2>
+                        <p><strong data-guest-singular="Invitado" data-guest-plural="Invitados"></strong>: <span id="guest-names"></span> (<span id="guest-count"></span> <span data-guest-plural="invitados" data-guest-singular="invitado"></span>)</p>
+                        <p>Invitación para <strong><span id="event-list"></span></strong>.</p>
+                        <p>En <span data-event-plural="las páginas siguientes" data-event-singular="la página siguiente"></span> <span data-guest-plural="encontrarán" data-guest-singular="encontrarás"></span> información sobre <span data-event-plural="los eventos" data-event-singular="el evento"></span>.</p>
                                                 
                         <div class="hidden" data-section="rsvp">
-                            <h2>Confirmar Asistencia</h2>
-                            <p>Por favor, confirmanos tu asistencia antes del 1 de noviembre.</p>
+                            <h2>Confirmar asistencia</h2>
+                            <p>Por favor, confirmanos tu asistencia <strong>antes del 1 de noviembre.</strong></p>
                             <form id="rsvp-form">
                                 <button type="submit" class="btn" name="attending" value="yes">¡Sí, allí estaremos!</button>
                                 <button type="submit" class="btn btn-secondary" name="attending" value="no">No podremos asistir</button>
@@ -94,9 +109,11 @@
                             <canvas class="hidden transition-canvas"></canvas> -->
                         <!-- </div> -->
                         <h2 class="emboss">Ceremonia civil</h2>
-                        <p><strong>Fecha:</strong> Miércoles 19 de noviembre</p>
-                        <p><strong>Hora:</strong> 10:00</p>
-                        <p><strong>Lugar:</strong> Registro Civil de Santa Elena, ER</p>
+                        <p><strong>Fecha:</strong> <span id="civil-fecha"></span></p>
+                        <p><strong>Hora:</strong> <span id="civil-hora"></span></p>
+                        <p><strong>Lugar:</strong> <span id="civil-lugar"></span></p>
+                        <p><strong>Dirección:</strong> <span id="civil-direccion"></span></p>
+                        <a id="civil-mapa" href="#" target="_blank" class="btn hidden">Ver en Mapa</a>
                     </div>
                 </div>
                 <div class="fade-overlay bottom"></div>
@@ -119,9 +136,11 @@
                             <canvas class="hidden transition-canvas"></canvas> -->
                         </div>
                         <h2 class="emboss">Discurso de bodas</h2>
-                        <p><strong>Fecha:</strong> Viernes 21 de noviembre</p>
-                        <p><strong>Hora:</strong> 10:00</p>
-                        <p><strong>Lugar:</strong> Salón del Reino de los Testigos de Jehová, Oro Verde, ER</p>
+                        <p><strong>Fecha:</strong> <span id="discurso-fecha"></span></p>
+                        <p><strong>Hora:</strong> <span id="discurso-hora"></span></p>
+                        <p><strong>Lugar:</strong> <span id="discurso-lugar"></span></p>
+                        <p><strong>Dirección:</strong> <span id="discurso-direccion"></span></p>
+                        <a id="discurso-mapa" href="#" target="_blank" class="btn hidden">Ver en Mapa</a>
                         <div class="hidden" data-section="zoom">
                             <h2>Transmisión en vivo</h2>
                             <p>El programa se va a transmitir en esta misma página.</p>
@@ -148,9 +167,11 @@
                             <canvas class="hidden transition-canvas"></canvas> -->
                         </div>
                         <h2 class="emboss">Recepción de bodas</h2>
-                        <p><strong>Fecha:</strong> Viernes 21 de noviembre</p>
-                        <p><strong>Hora:</strong> 12:00</p>
-                        <p><strong>Lugar:</strong> Ituzaingo S/N, Paraná, ER</p>
+                        <p><strong>Fecha:</strong> <span id="fiesta-fecha"></span></p>
+                        <p><strong>Hora:</strong> <span id="fiesta-hora"></span></p>
+                        <p><strong>Lugar:</strong> <span id="fiesta-lugar"></span></p>
+                        <p><strong>Dirección:</strong> <span id="fiesta-direccion"></span></p>
+                        <a id="fiesta-mapa" href="#" target="_blank" class="btn hidden">Ver en Mapa</a>
                     </div>
                 </div>
                 <div class="fade-overlay bottom"></div>
@@ -158,7 +179,7 @@
                 <button class="scroll-v-button down" aria-label="Scroll Down">&darr;</button>
             </section>
             
-            <section class="scroll-section" data-section="contratapa">
+            <section class="scroll-section hidden" data-section="contratapa">
                 <div class="fade-overlay top"></div>
                 <div class="scrollable-content">
                     <div class="content-wrapper  v-center">
@@ -185,10 +206,11 @@
 
 
 
-    <button class="scroll-button left" aria-label="Previous Section">&lt;</button>
-    <button class="scroll-button right" aria-label="Next Section">&gt;</button>
-    <div class="indicator-container"></div>
+    <button class="scroll-button left hidden" aria-label="Previous Section">&lt;</button>
+    <button class="scroll-button right hidden" aria-label="Next Section">&gt;</button>
+    <div class="indicator-container hidden"></div>
 
+    <script src="xxtea.js"></script>
     <script src="script.js?v=1"></script>
 </body>
 </html>

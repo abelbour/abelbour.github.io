@@ -1,17 +1,15 @@
-document.addEventListener('DOMContentLoaded', () => {
+const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcjtPM-3LNZFamySSe9rbVOjTu1pRSQ0Te5ILx6MmF9ClbBJUZvnfPHYsIg4_CclD_7ba0lv1QMdiZ/pub?output=csv';
+const eventDataUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcjtPM-3LNZFamySSe9rbVOjTu1pRSQ0Te5ILx6MmF9ClbBJUZvnfPHYsIg4_CclD_7ba0lv1QMdiZ/pub?output=csv&gid=1404690345';
+const guestDataPromise = fetch(googleSheetUrl).then(res => res.text());
+const eventDataPromise = fetch(eventDataUrl).then(res => res.text());
+
+document.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
+    const code = params.get('i');
 
-    const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcjtPM-3LNZFamySSe9rbVOjTu1pRSQ0Te5ILx6MmF9ClbBJUZvnfPHYsIg4_CclD_7ba0lv1QMdiZ/pub?output=csv';
+    const guestCsvText = await guestDataPromise;
+    processGuestData(code, guestCsvText);
 
-    if (code) {
-        fetchGuestData(code, googleSheetUrl);
-    } else {
-        document.querySelectorAll('.scroll-section[data-section]').forEach(item => item.remove());
-        const groupNameElement = document.getElementById('group-name');
-        if(groupNameElement) groupNameElement.textContent = 'Bienvenido/a';
-        setupNavigation(); // Restore the call
-    }
     setupSectionAnimations();
     setupVerticalScrolling();
 });
@@ -107,11 +105,15 @@ function setupNavigation() {
     const rightBtn = document.querySelector('.scroll-button.right');
 
     if (!container || sections.length <= 1) {
-        if(leftBtn) leftBtn.style.display = 'none';
-        if(rightBtn) rightBtn.style.display = 'none';
-        if(indicatorContainer) indicatorContainer.style.display = 'none';
+        if(leftBtn) leftBtn.classList.add('hidden');
+        if(rightBtn) rightBtn.classList.add('hidden');
+        if(indicatorContainer) indicatorContainer.classList.add('hidden');
         return;
     }
+    // If we have more than one section, show the controls
+    if(leftBtn) leftBtn.classList.remove('hidden');
+    if(rightBtn) rightBtn.classList.remove('hidden');
+    if(indicatorContainer) indicatorContainer.classList.remove('hidden');
 
     const scrollToSection = (index) => {
         const targetSection = sections[index];
@@ -164,12 +166,19 @@ function setupNavigation() {
     });
 }
 
-async function fetchGuestData(code, url) {
+function handlePlurals(type, count) {
+    const elements = document.querySelectorAll(`[data-${type}-singular]`);
+    if (!elements || elements.length === 0) return;
+
+    elements.forEach(element => {
+        const singularText = element.dataset[`${type}Singular`];
+        const pluralText = element.dataset[`${type}Plural`];
+        element.textContent = count === 1 ? singularText : pluralText;
+    });
+}
+
+async function processGuestData(code, csvText) {
     try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Could not fetch guest list.');
-        
-        const csvText = await response.text();
         const lines = csvText.split('\n').filter(line => line.trim() !== '');
         const headers = parseCsvRow(lines[0]);
         const dataRows = lines.slice(1).map(line => parseCsvRow(line));
@@ -179,36 +188,106 @@ async function fetchGuestData(code, url) {
             nombre: headers.indexOf('Nombre'),
             invitados: headers.indexOf('Invitados'),
             cantidad: headers.indexOf('Cantidad'),
-            conferencia: headers.indexOf('Conferencia'),
-            fiesta: headers.indexOf('Fiesta'),
-            zoom: headers.indexOf('Zoom'),
-            civil: headers.indexOf('Civil')
+            discurso: headers.indexOf('Discurso'), // Renamed from Conferencia
+            recepcion: headers.indexOf('Recepcion'), // Renamed from Fiesta
+            video: headers.indexOf('Video'),       // Renamed from Zoom
+            civil: headers.indexOf('Civil'),
+            eventos: headers.indexOf('Eventos')
         };
 
         for (const key in colIndices) {
             if (colIndices[key] === -1) throw new Error(`Column "${key}" not found.`);
         }
 
-        const guestRow = dataRows.find(row => row[colIndices.codigo] === code);
+        let guestRow = null;
+        // Only try to find a guest if a code was provided.
+        if (code) {
+            for (const row of dataRows) {
+                const encryptedCode = row[colIndices.codigo];
+                if (!encryptedCode) continue;
+
+                const decryptedCode = XXTEA.decryptFromBase64(encryptedCode, code);
+
+                if (decryptedCode === code) {
+                    const decryptedNombre = XXTEA.decryptFromBase64(row[colIndices.nombre], code);
+                    const decryptedInvitados = XXTEA.decryptFromBase64(row[colIndices.invitados], code);
+
+                    guestRow = [...row];
+                    guestRow[colIndices.codigo] = decryptedCode;
+                    guestRow[colIndices.nombre] = decryptedNombre;
+                    guestRow[colIndices.invitados] = decryptedInvitados;
+                    break;
+                }
+            }
+        }
 
         if (guestRow) {
             document.getElementById('group-name').textContent = `${guestRow[colIndices.nombre]}`;
-            document.getElementById('guest-names').textContent = `${guestRow[colIndices.invitados]}`;
-            const guestCount = guestRow[colIndices.cantidad];
-            if (guestCount) {
-                document.getElementById('guest-count').textContent = `(${guestCount} persona${guestCount > 1 ? 's' : ''})`;
+            const decryptedInvitados = guestRow[colIndices.invitados] || '';
+            const guestList = decryptedInvitados.split(',').map(name => name.trim()).filter(name => name);
+
+            let guestListString = "";
+            if (guestList.length > 0) {
+                if (guestList.length === 1) {
+                    guestListString = guestList[0];
+                } else if (guestList.length === 2) {
+                    guestListString = guestList.join(" y ");
+                } else {
+                    guestListString = guestList.slice(0, -1).join(", ") + " y " + guestList.slice(-1);
+                }
             }
+            document.getElementById('guest-names').textContent = guestListString;
+
+            const guestCount = parseInt(guestRow[colIndices.cantidad], 10) || 0;
+            if (guestCount > 0) {
+                document.getElementById('guest-count').textContent = guestCount;
+            }
+            handlePlurals('guest', guestCount);
+
+            const isInvitedToReception = guestRow[colIndices.recepcion]?.toLowerCase() === 'si';
 
             const sectionsToShow = {
                 portada: true,
                 invitacion: true,
                 civil: guestRow[colIndices.civil]?.toLowerCase() === 'si',
-                discurso: guestRow[colIndices.conferencia]?.toLowerCase() === 'si',
-                fiesta: guestRow[colIndices.fiesta]?.toLowerCase() === 'si',
-                zoom: guestRow[colIndices.zoom]?.toLowerCase() === 'si',
-                rsvp: guestRow[colIndices.fiesta]?.toLowerCase() === 'si',
+                discurso: guestRow[colIndices.discurso]?.toLowerCase() === 'si',
+                fiesta: isInvitedToReception,
+                zoom: guestRow[colIndices.video]?.toLowerCase() === 'si',
+                rsvp: isInvitedToReception,
                 contratapa: true
             };
+
+            // Build the dynamic event list for the invitation section
+            const eventList = [];
+            if (sectionsToShow.civil) eventList.push("ceremonia civil");
+            if (sectionsToShow.discurso) eventList.push("discurso de bodas");
+            if (sectionsToShow.fiesta) eventList.push("recepción de bodas");
+
+            let eventListString = "";
+            if (eventList.length > 0) {
+                if (eventList.length === 1) {
+                    eventListString = eventList[0];
+                } else if (eventList.length === 2) {
+                    eventListString = eventList.join(" y ");
+                } else {
+                    eventListString = eventList.slice(0, -1).join(", ") + " y " + eventList.slice(-1);
+                }
+            }
+            const eventListElement = document.getElementById('event-list');
+            if(eventListElement) {
+                eventListElement.textContent = eventListString;
+                handlePlurals('event', eventList.length);
+            }
+
+            // Decrypt the event key and fetch event details
+            const encryptedEventKey = guestRow[colIndices.eventos];
+            if (encryptedEventKey) {
+                const eventKey = XXTEA.decryptFromBase64(encryptedEventKey, code);
+                if (eventKey) {
+                    const eventCsvText = await eventDataPromise;
+                    await processEventDetails(eventKey, sectionsToShow, eventCsvText);
+                }
+            }
 
             document.querySelectorAll('[data-section]').forEach(item => {
                 if (sectionsToShow[item.dataset.section]) {
@@ -219,10 +298,16 @@ async function fetchGuestData(code, url) {
             });
 
         } else {
-            document.getElementById('group-name').textContent = 'Invitación no encontrada';
+            // This handles both wrong code and no code scenarios
+            const sectionsToShow = {
+                portada: true,
+                'no-code': true // Show our new section
+            };
+
             document.querySelectorAll('[data-section]').forEach(item => {
-                const section = item.dataset.section;
-                if (section !== 'portada' && section !== 'contratapa') {
+                if (sectionsToShow[item.dataset.section]) {
+                    item.classList.remove('hidden');
+                } else {
                     item.remove();
                 }
             });
@@ -234,7 +319,97 @@ async function fetchGuestData(code, url) {
         alert(error.message);
         document.querySelectorAll('.scroll-section[data-section]').forEach(item => item.remove());
     } finally {
+        const spinner = document.getElementById('loading-spinner');
+        if (spinner) {
+            spinner.style.opacity = '0';
+            setTimeout(() => {
+                spinner.style.display = 'none';
+            }, 500); // Match the CSS transition duration
+        }
         setupNavigation(); // Restore the call
+    }
+}
+
+async function processEventDetails(eventKey, sectionsToShow, csvText) {
+    try {
+        if (!csvText) throw new Error('Event data is not available.');
+        const lines = csvText.split('\n').filter(line => line.trim() !== '');
+        const headers = parseCsvRow(lines[0]);
+        const dataRows = lines.slice(1).map(line => parseCsvRow(line));
+
+        const colIndices = {
+            evento: headers.indexOf('Evento'),
+            lugar: headers.indexOf('Lugar'),
+            fecha: headers.indexOf('Fecha'),
+            direccion: headers.indexOf('Direccion'),
+            mapa: headers.indexOf('Mapa')
+        };
+
+        for (const row of dataRows) {
+            const encryptedEventName = row[colIndices.evento];
+            if (!encryptedEventName) continue;
+
+            const eventName = XXTEA.decryptFromBase64(encryptedEventName, eventKey);
+
+            // Map new event names from the data source to the data-section names in the HTML
+            let sectionName = eventName;
+            if (eventName === 'recepcion') {
+                sectionName = 'fiesta';
+            } else if (eventName === 'video') {
+                sectionName = 'zoom';
+            }
+
+            if (sectionName && sectionsToShow[sectionName]) {
+                const decryptedFechaStr = XXTEA.decryptFromBase64(row[colIndices.fecha], eventKey) || '';
+                const lugar = XXTEA.decryptFromBase64(row[colIndices.lugar], eventKey);
+                const direccion = XXTEA.decryptFromBase64(row[colIndices.direccion], eventKey);
+                const mapa = XXTEA.decryptFromBase64(row[colIndices.mapa], eventKey);
+
+                let fecha = '';
+                let hora = '';
+
+                if (decryptedFechaStr) {
+                    const dateObj = new Date(decryptedFechaStr);
+                    if (!isNaN(dateObj)) {
+                        // Format the date (e.g., Miércoles 19 de noviembre de 2025)
+                        fecha = dateObj.toLocaleDateString('es-AR', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+
+                        // Format the time (e.g., 10:00)
+                        hora = dateObj.toLocaleTimeString('es-AR', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                        });
+                    }
+                }
+
+                if (document.getElementById(`${sectionName}-fecha`)) {
+                    document.getElementById(`${sectionName}-fecha`).textContent = fecha;
+                }
+                if (document.getElementById(`${sectionName}-hora`)) {
+                    document.getElementById(`${sectionName}-hora`).textContent = hora;
+                }
+                if (document.getElementById(`${sectionName}-lugar`)) {
+                    document.getElementById(`${sectionName}-lugar`).textContent = lugar;
+                }
+                if (document.getElementById(`${sectionName}-direccion`)) {
+                    document.getElementById(`${sectionName}-direccion`).textContent = direccion;
+                }
+                const mapLink = document.getElementById(`${sectionName}-mapa`);
+                if (mapLink && mapa) {
+                    mapLink.href = mapa;
+                    mapLink.classList.remove('hidden');
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching event details:', error);
+        // Optionally, handle errors in fetching event details, e.g., show a message
     }
 }
 
