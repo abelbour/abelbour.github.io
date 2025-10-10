@@ -4,8 +4,8 @@ body, html {
     overflow-y: hidden;
     background-color: #f0e9e4;
     font-family: 'Overlock', sans-serif; 
-    color: rgb(107, 99, 95);
     padding:0;
+    color: rgb(107, 99, 95);
 }
 
 .scroll-container {
@@ -181,19 +181,16 @@ body, html {
 
 
 .emboss {
-    font-family: 'Parisienne', serif;
-     /* background: linear-gradient(to bottom, #8d7c56 25%, #7c7151 50%, #756540 75%); 
-    -webkit-background-clip: text;
+     background: linear-gradient(45deg, #9B6459 5%, #D9ABA0 50%, #9B6459 95%);
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    position: relative;
-    z-index: 1; */
-    color: #dbc5b7;
-    text-shadow: 
-    -0.25px -0.75px 1.5px #555555, 
-    1px 1.5px 2px #ffffff, 
-    -2px -2px 5px rgba(0, 0, 0, 0.2),
-    2px 2px 5px rgb(235, 235, 235);
+    color: #fff; 
+    filter: drop-shadow(-0.25px -0.75px 1.5px #9B6459) 
+    drop-shadow(0.5px 1.5px #D9ABA0) 
+    drop-shadow(2px 2px 4px rgb(235, 235, 235))
+    drop-shadow(-2px -2px 3px rgba(0, 0, 0, 0.15)) 
+    ;
+ 
 }
 
 h1, h2, h3 {
@@ -219,7 +216,6 @@ p {
     font-family: 'Cabin', sans-serif;
     font-size: 1.1rem;
     line-height: 1.2;
-    color: rgb(107, 99, 95);
 }
 
 /* Navigation Elements */
@@ -284,79 +280,37 @@ p {
 .btn, .btn-secondary {
     font-family: 'Cabin', sans-serif;
     padding: 0.75rem 1.5rem;
+    margin: 1.5rem;
     border-radius: 50px;
     text-decoration: none;
-    border: 1px solid #8c7a6b;
-    background-color: #8c7a6b;
+    background-color: #D9ABA0;
+    background: linear-gradient(45deg, #9B6459 5%, #D9ABA0 50%, #9B6459 95%);
     color: #fff;
     cursor: pointer;
     transition: background-color 0.2s ease-in-out;
+        filter: drop-shadow(-0.25px -0.75px 1.5px #9B6459) 
+    drop-shadow(0.5px 1.5px #D9ABA0) 
+    drop-shadow(2px 2px 4px rgb(235, 235, 235))
+    drop-shadow(-2px -2px 3px rgba(0, 0, 0, 0.15)) 
+    ;
 }
 
 .btn:hover {
-    background-color: #a28d7a;
-    border-color: #a28d7a;
+    background-color: #D9ABA0;
+    background: linear-gradient(90deg, #9B6459 5%, #D9ABA0 50%, #9B6459 95%);
+    border-color: #D9ABA0;
 }
 
 .btn-secondary {
     background-color: transparent;
-    color: #8c7a6b;
+    color: #D9ABA0;
 }
 
 .btn-secondary:hover {
     background-color: #f0e9e4;
 }
 
-/* [data-section="contratapa"] {
-    position: relative;
-    overflow: hidden;
-} */
 
-
-
-[data-section="portada"] .media-container {
-
-}
-
-[data-section="invitacion"] .media-container {
-    
-
-}
-
-[data-section="civil"] .media-container {
-
-}
-
-[data-section="discurso"] .media-container {
-
-}
-
-[data-section="fiesta"] .media-container {
-
-}
-
-[data-section="contratapa"] .media-container {
-
-}
-
-/* .line-image {
-    width: 100%;
-}
-
-.watercolor-image,
-.transition-video,
-.transition-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-} */
-.media-container {
-    /* position: relative;
-    margin-bottom: 2rem;
-    height: 30vh; */
-}
 
 .line-image {
     display: flex;
@@ -375,26 +329,6 @@ p {
     mix-blend-mode: multiply;
 }
 
-/* .watercolor-image {
-    visibility: hidden;
-    -webkit-mask-size: cover;
-    mask-size: cover;
-    -webkit-mask-position: center;
-    mask-position: center;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-mode: luminance;
-    mask-mode: luminance;
-    
-    
-} */
-
-
-
-/* [data-section="contratapa"] .content-wrapper {
-    position: relative;
-    z-index: 2;
-} */
 
 
 @media (max-width: 768px) {
