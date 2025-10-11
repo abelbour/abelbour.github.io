@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cabin&family=Parisienne&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Overlock:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="style.css?v=3">
     <style>
         .hidden {
             display: none;
@@ -53,7 +53,7 @@
                 <div class="fade-overlay top"></div>
                 <div class="scrollable-content">
                     <div class="content-wrapper v-center">
-                        <h2 class="emboss">No encontramos tu invitación</h2>
+                        <h2>No encontramos tu invitación</h2>
                         <p>Si fuiste invitado, es posible que no hayas ingresado la dirección correctamente. Por favor, revisá la invitación que te enviamos y usá el enlace que se encuentra allí. Gracias.</p>
                     </div>
                 </div>
@@ -84,10 +84,16 @@
                         <div class="hidden" data-section="rsvp">
                             <h2>Confirmar asistencia</h2>
                             <p>Por favor, confirmanos tu asistencia <strong>antes del 1 de noviembre.</strong></p>
-                            <p>
-                                <a href="#" target="_blank" class="btn ">¡Sí, allí estaremos!</a> 
-                                <a href="#" target="_blank" class="btn ">No podremos asistir</a>
-                           </p>
+                            <form id="rsvp-form" action="https://docs.google.com/forms/d/e/1FAIpQLSdDEzeFAuX07jbAkmJHPwptyNHilQRdmfduBWLz1aD7_Ps_ZQ/formResponse" method="POST" target="rsvp-iframe">
+                                <input type="hidden" name="entry.641668059" id="rsvp-code-input">
+                                <input type="hidden" name="entry.746146577" id="rsvp-confirmation-input">
+                                <p>
+                                    <button type="submit" id="rsvp-yes-btn" class="btn" value="Si">¡Sí, allí estaremos!</button> 
+                                    <button type="submit" id="rsvp-no-btn" class="btn btn-secondary" value="No">No podremos asistir</button>
+                                </p>
+                            </form>
+                            <div id="rsvp-message" class="hidden">¡Gracias por confirmar tu asistencia!</div>
+                            <iframe name="rsvp-iframe" id="rsvp-iframe" style="display:none;"></iframe>
                             <br>
                             <br>
                         </div>
@@ -215,6 +221,6 @@
     <div class="indicator-container hidden"></div>
 
     <script src="xxtea.js"></script>
-    <script src="script.js?v=2"></script>
+    <script src="script.js?v=3"></script>
 </body>
 </html>

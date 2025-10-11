@@ -289,6 +289,34 @@ async function processGuestData(code, csvText) {
                 }
             }
 
+            // Setup RSVP form submission
+            const rsvpForm = document.getElementById('rsvp-form');
+            const rsvpCodeInput = document.getElementById('rsvp-code-input');
+            const rsvpConfirmationInput = document.getElementById('rsvp-confirmation-input');
+            const rsvpMessage = document.getElementById('rsvp-message');
+            const rsvpIframe = document.getElementById('rsvp-iframe');
+
+            if (rsvpForm && rsvpCodeInput && rsvpConfirmationInput && rsvpMessage && rsvpIframe) {
+                rsvpCodeInput.value = code; // Set the user's code once
+
+                rsvpForm.addEventListener('submit', (event) => {
+                    // Determine which button was clicked
+                    const clickedButton = event.submitter;
+                    if (clickedButton) {
+                        rsvpConfirmationInput.value = clickedButton.value; // 'Si' or 'No'
+                    }
+                    // Show loading spinner or disable buttons temporarily
+                    rsvpForm.querySelectorAll('button').forEach(btn => btn.disabled = true);
+                    rsvpMessage.classList.add('hidden'); // Hide previous message
+                });
+
+                rsvpIframe.onload = () => {
+                    // This fires after the form is submitted to Google Forms
+                    rsvpMessage.classList.remove('hidden'); // Show success message
+                    // Optionally, re-enable buttons or show a different message
+                };
+            }
+
             document.querySelectorAll('[data-section]').forEach(item => {
                 if (sectionsToShow[item.dataset.section]) {
                     item.classList.remove('hidden');

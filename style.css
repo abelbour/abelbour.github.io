@@ -31,6 +31,7 @@ body, html {
     /* border-radius: 0.5rem; */
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.274);
     background-color: #fff;
+    background-image: url('images/paper.webp');
     /* The margin now correctly creates the visual spacing */
     margin: 0 10vw; 
 }
@@ -44,11 +45,12 @@ body, html {
     display: flex;
     justify-content: center;
     text-align: center;
-    border-left:3px solid #ffffff;
+    /* border-left:3px solid #ffffff;
     border-top:3px solid #ffffff;
     border-right:3px solid #eeeeee;
-    border-bottom:3px solid #eeeeee;
-    background-image: url('images/paper.webp');
+    border-bottom:3px solid #eeeeee; */
+    box-shadow: inset 2px 2px 5px rgba(255, 255, 255, 1), inset -2px -2px 5px rgba(0, 0, 0, 0.1);
+    
     position: relative;
     overflow: hidden;
 
