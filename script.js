@@ -11,8 +11,77 @@ document.addEventListener('DOMContentLoaded', async () => {
     processGuestData(code, guestCsvText);
 
     setupSectionAnimations();
-    setupVerticalScrolling();
+    setupSmartScroll();
 });
+
+function setupSmartScroll() {
+    const container = document.querySelector('.scroll-container');
+    if (!container) return;
+
+    let sections = [];
+    let currentSection = null;
+    let isThrottled = false;
+    const throttleDuration = 500; // ms
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                currentSection = entry.target;
+            }
+        });
+    }, { root: container, threshold: 0.6 });
+
+    function updateSections() {
+        sections = Array.from(document.querySelectorAll('.scroll-section:not(.hidden)'));
+        sections.forEach(section => observer.observe(section));
+    }
+
+    container.addEventListener('wheel', (e) => {
+        if (!currentSection || isThrottled) {
+            e.preventDefault();
+            return;
+        }
+
+        const scrollableContent = currentSection.querySelector('.scrollable-content');
+        if (!scrollableContent) return;
+
+        const hasVerticalOverflow = scrollableContent.scrollHeight > scrollableContent.clientHeight;
+        const isAtTop = scrollableContent.scrollTop === 0;
+        const isAtBottom = Math.abs(scrollableContent.scrollHeight - scrollableContent.clientHeight - scrollableContent.scrollTop) < 1;
+
+        const delta = e.deltaY;
+
+        if (hasVerticalOverflow) {
+            if ((delta < 0 && !isAtTop) || (delta > 0 && !isAtBottom)) {
+                // Allow default vertical scroll
+                return;
+            }
+        }
+        
+        e.preventDefault();
+        
+        isThrottled = true;
+        setTimeout(() => { isThrottled = false; }, throttleDuration);
+
+        const currentIndex = sections.indexOf(currentSection);
+        if (delta > 0) { // Scrolling down/right
+            if (currentIndex < sections.length - 1) {
+                const nextSection = sections[currentIndex + 1];
+                container.scrollTo({ left: nextSection.offsetLeft, behavior: 'smooth' });
+            }
+        } else { // Scrolling up/left
+            if (currentIndex > 0) {
+                const prevSection = sections[currentIndex - 1];
+                container.scrollTo({ left: prevSection.offsetLeft, behavior: 'smooth' });
+            }
+        }
+    });
+
+    // Initial setup and update on changes
+    updateSections();
+    const mutationObserver = new MutationObserver(updateSections);
+    mutationObserver.observe(document.querySelector('.long-card'), { childList: true, attributes: true });
+}
 
 function setupVerticalScrolling() {
     document.querySelectorAll('.scroll-section').forEach(section => {

@@ -5,7 +5,7 @@ body, html {
     background-color: #f0e9e4;
     font-family: 'Overlock', sans-serif; 
     padding:0;
-    color: rgb(107, 99, 95);
+    color: rgba(24, 21, 20, 0.699);
 }
 
 .scroll-container {
@@ -192,11 +192,19 @@ body, html {
     drop-shadow(2px 2px 4px rgb(235, 235, 235))
     drop-shadow(-2px -2px 3px rgba(0, 0, 0, 0.15)) 
     ;
+    mix-blend-mode :normal;
  
 }
 
 h1, h2, h3 {
     font-family: 'Parisienne', serif;
+    
+         background-image: url('images/paper.webp');
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: #fff; 
+    filter:brightness(0.35);
+    mix-blend-mode :darken;
 }
 
 
