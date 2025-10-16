@@ -295,8 +295,8 @@ async function processGuestData(code, csvText) {
             const decryptedInvitados = guestRow[colIndices.invitados] || '';
             const guestList = decryptedInvitados.split(',').map(name => name.trim()).filter(name => name);
 
-            let guestListString = "";
             if (guestList.length > 0) {
+                let guestListString = "";
                 if (guestList.length === 1) {
                     guestListString = guestList[0];
                 } else if (guestList.length === 2) {
@@ -304,8 +304,13 @@ async function processGuestData(code, csvText) {
                 } else {
                     guestListString = guestList.slice(0, -1).join(", ") + " y " + guestList.slice(-1);
                 }
+                document.getElementById('guest-names').textContent = guestListString;
+            } else {
+                const guestNamesElement = document.getElementById('guest-names');
+                if (guestNamesElement && guestNamesElement.parentElement) {
+                    guestNamesElement.parentElement.classList.add('hidden');
+                }
             }
-            document.getElementById('guest-names').textContent = guestListString;
 
             const guestCount = parseInt(guestRow[colIndices.cantidad], 10) || 0;
             if (guestCount > 0) {
