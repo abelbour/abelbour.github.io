@@ -70,6 +70,10 @@ body, html {
     color: var(--color-text);
 }
 
+.fonts-loading .scroll-container {
+    visibility: hidden;
+}
+
 a {
     color: var(--color-text);
 }
@@ -217,24 +221,45 @@ p {
     align-items: center;
     filter: var(--shadow-button);
 }
-.scroll-button-base span {
-        background: var(--gradient-emboss);
-     background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: #fff; /* Fallback */
-    filter: var(--shadow-lift);
-    mix-blend-mode: normal;
+.scroll-button-base {
+    background: var(--gradient-silver);
+    border: 1px solid #e0d7ce;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    color: var(--color-white-alpha);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    filter: var(--shadow-button);
 }
+
+.arrow-svg {
+    width: 24px;
+    height: 24px;
+    fill: var(--color-rose-gold-dark);
+}
+
+.scroll-v-button.down .arrow-svg {
+    transform: rotate(180deg);
+}
+
+.scroll-h-button.left .arrow-svg {
+    transform: rotate(-90deg);
+}
+
+.scroll-h-button.right .arrow-svg {
+    transform: rotate(90deg);
+}
+
 .scroll-button-base:hover {
     background: var(--gradient-rose-gold);
 }
-.scroll-button-base:hover span{
-    background: var(--gradient-silver);
-         background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: #fff; /* Fallback */
-    filter: var(--shadow-lift);
-    mix-blend-mode: normal;
+
+.scroll-button-base:hover .arrow-svg {
+    fill: var(--color-silver-light);
 }
 
 /* --- Vertical Scroll Buttons --- */
@@ -369,6 +394,25 @@ p {
     margin-top: -3vh;
 }
 
+/* --- Responsive Video --- */
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+    max-width: 100%;
+    background: #000;
+    margin: 1.5rem 0;
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
 
 
 /* --- Loading Spinner --- */
@@ -385,15 +429,60 @@ p {
     align-items: center;
     transition: opacity 0.5s ease;
 }
-#loading-spinner::after {
-    content: '';
-    width: 50px;
-    height: 50px;
-    border: 5px solid var(--color-indicator);
-    border-top-color: var(--color-indicator-active);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+
+.rhombus {
+    margin: 40px 0 0 60px;
+    /*background: #fcfcfc;*/
+    margin: auto;
+    margin-top: 100px;
+    border-radius: 10px;
+    height: 75px;
+    width: 75px;
+    margin-bottom: 10px;
+    float: center;
 }
+
+.rhombus:before {
+    content: "";
+    position: absolute;
+    background: var(--color-rose-gold-light);
+    height: 40px;
+    width: 40px;
+    z-index: 0;
+    margin-top: 15px;
+    margin-left: 15px;
+    transform: rotate(45deg);
+}
+
+.rhombus .circle1 {
+    content: "";
+    position: absolute;
+    background: var(--color-rose-gold-light);
+    height: 40px;
+    width: 40px;
+    z-index: 1;
+    border-radius: 50%;
+    animation-duration: 2s;
+    animation-name: change1;
+    animation-iteration-count: infinite;
+    animation-direction: reverse;
+}
+
+.rhombus .circle2 {
+    content: "";
+    position: absolute;
+    background: var(--color-rose-gold-light);
+    height: 40px;
+    width: 40px;
+    z-index: 1;
+    margin-left: 30px;
+    border-radius: 50%;
+    animation-duration: 2s;
+    animation-name: change2;
+    animation-iteration-count: infinite;
+    animation-direction: reverse;
+}
+
 
 /* ==========================================================================
    ANIMATIONS
@@ -424,9 +513,32 @@ p {
   50% { transform: translate(5px, -50%); }
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
+@keyframes change1 {
+    0%,
+    25% {
+        margin-top: 0px;
+        margin-left: 0px;
+    }
+    50%,
+    75% {
+        margin-top: 30px;
+        margin-left: 30px;
+    }
 }
+
+@keyframes change2 {
+    25%,
+    50% {
+        margin-top: 30px;
+        margin-left: 0px;
+    }
+    75%,
+    100% {
+        margin-top: 0px;
+        margin-left: 30px;
+    }
+}
+
 
 /* ==========================================================================
    MEDIA QUERIES

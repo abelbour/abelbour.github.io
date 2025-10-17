@@ -5,18 +5,26 @@ const eventDataUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcjtPM-3L
 const guestDataPromise = fetch(`${googleSheetUrl}&_=${Date.now()}`).then(res => res.text());
 const eventDataPromise = fetch(`${eventDataUrl}&_=${Date.now()}`).then(res => res.text());
 
-document.addEventListener('DOMContentLoaded', async () => {
-    const params = new URLSearchParams(window.location.search);
-    let code = params.get('i');
-    if (code) {
-        code = code.replace(/ /g, '+');
-    }
+document.addEventListener('DOMContentLoaded', () => {
+    // Wait for all custom fonts to be loaded before processing the data and showing the page.
+    document.fonts.ready.then(async () => {
+        const params = new URLSearchParams(window.location.search);
+        let code = params.get('i');
+        if (code) {
+            // Sanitize the code: replace spaces with '+' and remove any characters not valid in Base64.
+            code = code.replace(/ /g, '+').replace(/[^A-Za-z0-9\+\/\=]/g, '');
+        }
 
-    const guestCsvText = await guestDataPromise;
-    processGuestData(code, guestCsvText);
+        const guestCsvText = await guestDataPromise;
+        await processGuestData(code, guestCsvText);
 
-    setupSectionAnimations();
-    setupVerticalScrolling();
+        // Now that data is processed and sections are visible, remove the loading class.
+        document.body.classList.remove('fonts-loading');
+
+        // The rest of the setup can proceed.
+        setupSectionAnimations();
+        setupVerticalScrolling();
+    });
 });
 
 function setupSmartScroll() {

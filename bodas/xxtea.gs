@@ -19,8 +19,25 @@ function XXTEA_ENCRYPT(data, key) {
   if (data === undefined || data === null || data === '') return '';
   if (key === undefined || key === null || key === '') return 'ERROR: Key is required.';
   
+  var s_data = String(data);
+  var s_key = String(key);
+
+  var cache = CacheService.getScriptCache();
+  // Create a unique key for the given data and key.
+  var cacheKey = 'encrypt_' + s_data + '_' + s_key;
+  // Hash the key to ensure it's within the cache key length limits (250 chars).
+  var hashedCacheKey = Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, cacheKey));
+  
+  var cached = cache.get(hashedCacheKey);
+  if (cached != null) {
+    return cached;
+  }
+
   try {
-    return encryptToBase64(String(data), String(key));
+    var result = encryptToBase64(s_data, s_key);
+    // Cache the result for 6 hours to avoid re-computation on the same data.
+    cache.put(hashedCacheKey, result, 21600);
+    return result;
   } catch (e) {
     return 'ERROR: ' + e.message;
   }
@@ -37,10 +54,26 @@ function XXTEA_DECRYPT(data, key) {
   if (data === undefined || data === null || data === '') return '';
   if (key === undefined || key === null || key === '') return 'ERROR: Key is required.';
 
+  var s_data = String(data);
+  var s_key = String(key);
+
+  var cache = CacheService.getScriptCache();
+  // Create a unique key for the given data and key.
+  var cacheKey = 'decrypt_' + s_data + '_' + s_key;
+  // Hash the key to ensure it's within the cache key length limits (250 chars).
+  var hashedCacheKey = Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, cacheKey));
+
+  var cached = cache.get(hashedCacheKey);
+  if (cached != null) {
+    return cached;
+  }
+
   try {
-    var decrypted = decryptFromBase64(String(data), String(key));
-    // If decryption fails (e.g., wrong key), the result is null.
-    return decrypted === null ? '' : decrypted;
+    var decrypted = decryptFromBase64(s_data, s_key);
+    var result = decrypted === null ? '' : decrypted;
+    // Cache the result for 6 hours to avoid re-computation on the same data.
+    cache.put(hashedCacheKey, result, 21600);
+    return result;
   } catch (e) {
     // This catches errors from invalid Base64, etc.
     return '';
