@@ -1,29 +1,61 @@
 const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcjtPM-3LNZFamySSe9rbVOjTu1pRSQ0Te5ILx6MmF9ClbBJUZvnfPHYsIg4_CclD_7ba0lv1QMdiZ/pub?output=csv';
 const eventDataUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcjtPM-3LNZFamySSe9rbVOjTu1pRSQ0Te5ILx6MmF9ClbBJUZvnfPHYsIg4_CclD_7ba0lv1QMdiZ/pub?output=csv&gid=1404690345';
 
-// Appending a timestamp to the URL to prevent caching.
-const guestDataPromise = fetch(`${googleSheetUrl}&_=${Date.now()}`).then(res => res.text());
-const eventDataPromise = fetch(`${eventDataUrl}&_=${Date.now()}`).then(res => res.text());
+/**
+ * Fetches a resource with a specified number of retries.
+ * @param {string} url The URL to fetch.
+ * @param {number} retries The number of times to retry on failure.
+ * @returns {Promise<Response>} A promise that resolves with the response.
+ */
+async function fetchWithRetry(url, retries = 3) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            // Append a timestamp to the URL to prevent caching.
+            const response = await fetch(`${url}&_=${Date.now()}`);
+            if (response.ok) {
+                return response;
+            }
+            console.warn(`Fetch attempt ${i + 1} failed with status: ${response.status}`);
+        } catch (error) {
+            console.warn(`Fetch attempt ${i + 1} failed with error:`, error);
+        }
+    }
+    throw new Error(`Failed to fetch ${url} after ${retries} attempts.`);
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
     // Wait for all custom fonts to be loaded before processing the data and showing the page.
     document.fonts.ready.then(async () => {
-        const params = new URLSearchParams(window.location.search);
-        let code = params.get('i');
-        if (code) {
-            // Sanitize the code: replace spaces with '+' and remove any characters not valid in Base64.
-            code = code.replace(/ /g, '+').replace(/[^A-Za-z0-9\+\/\=]/g, '');
+        try {
+            const guestDataPromise = fetchWithRetry(googleSheetUrl).then(res => res.text());
+            const eventDataPromise = fetchWithRetry(eventDataUrl).then(res => res.text());
+
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('i');
+
+            const guestCsvText = await guestDataPromise;
+            await processGuestData(code, guestCsvText, eventDataPromise);
+
+            // Now that data is processed and sections are visible, remove the loading class.
+            document.body.classList.remove('fonts-loading');
+
+            // The rest of the setup can proceed.
+            setupSectionAnimations();
+            setupVerticalScrolling();
+        } catch (error) {
+            console.error("Fatal Error:", error);
+            // Hide the spinner and show an error message to the user.
+            const spinner = document.getElementById('loading-spinner');
+            if (spinner) spinner.style.display = 'none';
+            
+            const errorSection = document.querySelector('[data-section="no-code"]');
+            if(errorSection) {
+                errorSection.classList.remove('hidden');
+                errorSection.querySelector('h2').textContent = 'Error de conexión';
+                errorSection.querySelector('p').textContent = 'No se pudo cargar la información de la invitación. Por favor, revisá tu conexión a internet y recargá la página.';
+            }
         }
-
-        const guestCsvText = await guestDataPromise;
-        await processGuestData(code, guestCsvText);
-
-        // Now that data is processed and sections are visible, remove the loading class.
-        document.body.classList.remove('fonts-loading');
-
-        // The rest of the setup can proceed.
-        setupSectionAnimations();
-        setupVerticalScrolling();
     });
 });
 
@@ -280,7 +312,7 @@ function decryptField(data, key) {
     }
 }
 
-async function processGuestData(code, csvText) {
+async function processGuestData(code, csvText, eventDataPromise) {
     try {
         const lines = csvText.split('\n').filter(line => line.trim() !== '');
         const headers = parseCsvRow(lines[0]);
@@ -472,10 +504,21 @@ async function processGuestData(code, csvText) {
         }
 
     } catch (error) {
-        console.error('Error:', error);
-        document.getElementById('group-name').textContent = 'No se pudo cargar la invitación.';
-        alert(error.message);
-        document.querySelectorAll('.scroll-section[data-section]').forEach(item => item.remove());
+        console.error('Error processing guest data:', error);
+        // This is a fallback for unexpected errors during data processing.
+        const retryCount = parseInt(sessionStorage.getItem('retryCount') || '0');
+        if (retryCount < 2) {
+            sessionStorage.setItem('retryCount', retryCount + 1);
+            setTimeout(() => location.reload(), 2000); // Wait 2 seconds before reloading
+        } else {
+            sessionStorage.removeItem('retryCount');
+            const errorSection = document.querySelector('[data-section="no-code"]');
+            if(errorSection) {
+                errorSection.classList.remove('hidden');
+                errorSection.querySelector('h2').textContent = 'Error de datos';
+                errorSection.querySelector('p').textContent = 'No se pudo procesar la información de la invitación. Por favor, intentá recargar la página o contactanos.';
+            }
+        }
     } finally {
         const spinner = document.getElementById('loading-spinner');
         if (spinner) {
