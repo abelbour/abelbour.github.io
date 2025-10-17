@@ -1,7 +1,9 @@
 const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcjtPM-3LNZFamySSe9rbVOjTu1pRSQ0Te5ILx6MmF9ClbBJUZvnfPHYsIg4_CclD_7ba0lv1QMdiZ/pub?output=csv';
 const eventDataUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcjtPM-3LNZFamySSe9rbVOjTu1pRSQ0Te5ILx6MmF9ClbBJUZvnfPHYsIg4_CclD_7ba0lv1QMdiZ/pub?output=csv&gid=1404690345';
-const guestDataPromise = fetch(googleSheetUrl).then(res => res.text());
-const eventDataPromise = fetch(eventDataUrl).then(res => res.text());
+
+// Appending a timestamp to the URL to prevent caching.
+const guestDataPromise = fetch(`${googleSheetUrl}&_=${Date.now()}`).then(res => res.text());
+const eventDataPromise = fetch(`${eventDataUrl}&_=${Date.now()}`).then(res => res.text());
 
 document.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
