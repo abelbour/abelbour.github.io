@@ -5,13 +5,16 @@ const eventDataPromise = fetch(eventDataUrl).then(res => res.text());
 
 document.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
-    const code = params.get('i');
+    let code = params.get('i');
+    if (code) {
+        code = code.replace(/ /g, '+');
+    }
 
     const guestCsvText = await guestDataPromise;
     processGuestData(code, guestCsvText);
 
     setupSectionAnimations();
-    setupSmartScroll();
+    setupVerticalScrolling();
 });
 
 function setupSmartScroll() {
@@ -170,18 +173,22 @@ function setupNavigation() {
     const container = document.querySelector('.scroll-container'); // Target the new scrolling container
     const sections = Array.from(document.querySelectorAll('.scroll-section'));
     const indicatorContainer = document.querySelector('.indicator-container');
-    const leftBtn = document.querySelector('.scroll-button.left');
-    const rightBtn = document.querySelector('.scroll-button.right');
+    const leftBtn = document.querySelector('.scroll-h-button.left');
+    const rightBtn = document.querySelector('.scroll-h-button.right');
 
     if (!container || sections.length <= 1) {
-        if(leftBtn) leftBtn.classList.add('hidden');
-        if(rightBtn) rightBtn.classList.add('hidden');
         if(indicatorContainer) indicatorContainer.classList.add('hidden');
         return;
     }
     // If we have more than one section, show the controls
-    if(leftBtn) leftBtn.classList.remove('hidden');
-    if(rightBtn) rightBtn.classList.remove('hidden');
+    if(leftBtn) {
+        leftBtn.classList.remove('hidden');
+        leftBtn.classList.add('visible');
+    }
+    if(rightBtn) {
+        rightBtn.classList.remove('hidden');
+        rightBtn.classList.add('visible');
+    }
     if(indicatorContainer) indicatorContainer.classList.remove('hidden');
 
     const scrollToSection = (index) => {
@@ -246,6 +253,23 @@ function handlePlurals(type, count) {
     });
 }
 
+function decryptField(data, key) {
+    if (typeof data !== 'string' || !data) {
+        return null;
+    }
+    // Base64 strings shouldn't contain spaces, but URL encoding or copy-paste errors can introduce them.
+    const sanitizedData = data.trim().replace(/ /g, '+');
+    try {
+        // The atob function will throw an error if the string is not a valid base64 string.
+        return XXTEA.decryptFromBase64(sanitizedData, key);
+    } catch (e) {
+        // Log the error and the problematic data for debugging.
+        console.error(`Failed to decrypt data. Input: "${data}", Sanitized: "${sanitizedData}"`, e);
+        // Return a value that indicates failure but doesn't crash the app.
+        return null; 
+    }
+}
+
 async function processGuestData(code, csvText) {
     try {
         const lines = csvText.split('\n').filter(line => line.trim() !== '');
@@ -261,7 +285,8 @@ async function processGuestData(code, csvText) {
             recepcion: headers.indexOf('Recepcion'), // Renamed from Fiesta
             video: headers.indexOf('Video'),       // Renamed from Zoom
             civil: headers.indexOf('Civil'),
-            eventos: headers.indexOf('Eventos')
+            eventos: headers.indexOf('Eventos'),
+            confirmacion: headers.indexOf('Confirmado')
         };
 
         for (const key in colIndices) {
@@ -272,19 +297,18 @@ async function processGuestData(code, csvText) {
         // Only try to find a guest if a code was provided.
         if (code) {
             for (const row of dataRows) {
-                const encryptedCode = row[colIndices.codigo];
-                if (!encryptedCode) continue;
-
-                const decryptedCode = XXTEA.decryptFromBase64(encryptedCode, code);
+                const decryptedCode = decryptField(row[colIndices.codigo], code);
 
                 if (decryptedCode === code) {
-                    const decryptedNombre = XXTEA.decryptFromBase64(row[colIndices.nombre], code);
-                    const decryptedInvitados = XXTEA.decryptFromBase64(row[colIndices.invitados], code);
+                    const decryptedNombre = decryptField(row[colIndices.nombre], code);
+                    const decryptedInvitados = decryptField(row[colIndices.invitados], code);
+                    const confirmacion = row[colIndices.confirmacion]; // Read as plain text
 
                     guestRow = [...row];
                     guestRow[colIndices.codigo] = decryptedCode;
                     guestRow[colIndices.nombre] = decryptedNombre;
                     guestRow[colIndices.invitados] = decryptedInvitados;
+                    guestRow[colIndices.confirmacion] = confirmacion;
                     break;
                 }
             }
@@ -331,6 +355,21 @@ async function processGuestData(code, csvText) {
                 contratapa: true
             };
 
+            // Handle RSVP status
+            const rsvpStatus = guestRow[colIndices.confirmacion];
+            const rsvpSection = document.querySelector('[data-section="rsvp"]');
+            const rsvpForm = document.getElementById('rsvp-form');
+            const rsvpConfirmedMessage = document.getElementById('rsvp-confirmed-message');
+            const rsvpDeclinedMessage = document.getElementById('rsvp-declined-message');
+
+            if (rsvpStatus === 'Si') {
+                if (rsvpForm) rsvpForm.classList.add('hidden');
+                if (rsvpConfirmedMessage) rsvpConfirmedMessage.classList.remove('hidden');
+            } else if (rsvpStatus === 'No') {
+                if (rsvpForm) rsvpForm.classList.add('hidden');
+                if (rsvpDeclinedMessage) rsvpDeclinedMessage.classList.remove('hidden');
+            }
+
             // Build the dynamic event list for the invitation section
             const eventList = [];
             if (sectionsToShow.civil) eventList.push("ceremonia civil");
@@ -356,7 +395,7 @@ async function processGuestData(code, csvText) {
             // Decrypt the event key and fetch event details
             const encryptedEventKey = guestRow[colIndices.eventos];
             if (encryptedEventKey) {
-                const eventKey = XXTEA.decryptFromBase64(encryptedEventKey, code);
+                const eventKey = decryptField(encryptedEventKey, code);
                 if (eventKey) {
                     const eventCsvText = await eventDataPromise;
                     await processEventDetails(eventKey, sectionsToShow, eventCsvText);
@@ -364,7 +403,6 @@ async function processGuestData(code, csvText) {
             }
 
             // Setup RSVP form submission
-            const rsvpForm = document.getElementById('rsvp-form');
             const rsvpCodeInput = document.getElementById('rsvp-code-input');
             const rsvpConfirmationInput = document.getElementById('rsvp-confirmation-input');
             const rsvpMessage = document.getElementById('rsvp-message');
@@ -379,15 +417,23 @@ async function processGuestData(code, csvText) {
                     if (clickedButton) {
                         rsvpConfirmationInput.value = clickedButton.value; // 'Si' or 'No'
                     }
-                    // Show loading spinner or disable buttons temporarily
-                    rsvpForm.querySelectorAll('button').forEach(btn => btn.disabled = true);
+                    // Show loading spinner
+                    const spinner = document.getElementById('loading-spinner');
+                    if (spinner) {
+                        spinner.style.display = 'flex';
+                        setTimeout(() => {
+                            spinner.style.opacity = '1';
+                        }, 10); // Small delay for transition
+                    }
                     rsvpMessage.classList.add('hidden'); // Hide previous message
                 });
 
                 rsvpIframe.onload = () => {
-                    // This fires after the form is submitted to Google Forms
-                    rsvpMessage.classList.remove('hidden'); // Show success message
-                    // Optionally, re-enable buttons or show a different message
+                    // This fires after the form is submitted.
+                    // Wait 5 seconds then reload to show the new status.
+                    setTimeout(() => {
+                        location.reload();
+                    }, 5000);
                 };
             }
 
@@ -451,7 +497,7 @@ async function processEventDetails(eventKey, sectionsToShow, csvText) {
             const encryptedEventName = row[colIndices.evento];
             if (!encryptedEventName) continue;
 
-            const eventName = XXTEA.decryptFromBase64(encryptedEventName, eventKey);
+            const eventName = decryptField(encryptedEventName, eventKey);
 
             // Map new event names from the data source to the data-section names in the HTML
             let sectionName = eventName;
@@ -462,10 +508,10 @@ async function processEventDetails(eventKey, sectionsToShow, csvText) {
             }
 
             if (sectionName && sectionsToShow[sectionName]) {
-                const decryptedFechaStr = XXTEA.decryptFromBase64(row[colIndices.fecha], eventKey) || '';
-                const lugar = XXTEA.decryptFromBase64(row[colIndices.lugar], eventKey);
-                const direccion = XXTEA.decryptFromBase64(row[colIndices.direccion], eventKey);
-                const mapa = XXTEA.decryptFromBase64(row[colIndices.mapa], eventKey);
+                const decryptedFechaStr = decryptField(row[colIndices.fecha], eventKey) || '';
+                const lugar = decryptField(row[colIndices.lugar], eventKey);
+                const direccion = decryptField(row[colIndices.direccion], eventKey);
+                const mapa = decryptField(row[colIndices.mapa], eventKey);
 
                 let fecha = '';
                 let hora = '';
