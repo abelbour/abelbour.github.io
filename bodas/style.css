@@ -29,21 +29,21 @@
   --gradient-emboss: linear-gradient(var(--gradient-angle), var(--color-rose-gold-dark) 5%, var(--color-rose-gold-light) 50%, var(--color-rose-gold-dark) 95%);
   --gradient-fade-top: linear-gradient(to bottom, rgba(240, 233, 228, 1) 0%, rgba(240, 233, 228, 0) 100%);
   --gradient-fade-bottom: linear-gradient(to top, rgba(240, 233, 228, 1) 0%, rgba(240, 233, 228, 0) 100%);
-  --gradient-conic-silver: conic-gradient(from 135deg at 50% 50%, var(--color-silver-light) 0deg, var(--color-silver-dark) 90deg, var(--color-silver-light) 180deg, var(--color-silver-dark) 270deg, var(--color-silver-light) 360deg);
+  --gradient-conic-silver: conic-gradient(from 45deg at 50% 50%, var(--color-silver-light) 0deg, var(--color-silver-dark) 90deg, var(--color-silver-light) 180deg, var(--color-silver-dark) 270deg, var(--color-silver-light) 360deg);
   --gradient-conic-rose-gold: conic-gradient(from 45deg at 50% 50%, var(--color-rose-gold-light) 0deg, var(--color-rose-gold-dark) 90deg, var(--color-rose-gold-light) 180deg, var(--color-rose-gold-dark) 270deg, var(--color-rose-gold-light) 360deg);
-  --gradient-conic-silver-alt: conic-gradient(from 180deg at 50% 50%, var(--color-silver-light) 0deg, var(--color-silver-dark) 90deg, var(--color-silver-light) 180deg, var(--color-silver-dark) 270deg, var(--color-silver-light) 360deg);
+  --gradient-conic-silver-alt: conic-gradient(from 90deg at 50% 50%, var(--color-silver-light) 0deg, var(--color-silver-dark) 90deg, var(--color-silver-light) 180deg, var(--color-silver-dark) 270deg, var(--color-silver-light) 360deg);
   --gradient-conic-rose-gold-alt: conic-gradient(from 90deg at 50% 50%, var(--color-rose-gold-light) 0deg, var(--color-rose-gold-dark) 90deg, var(--color-rose-gold-light) 180deg, var(--color-rose-gold-dark) 270deg, var(--color-rose-gold-light) 360deg);
 
   /* Effects */
   --shadow-emboss: 
-    drop-shadow(-0.25px -0.75px 1.5px var(--color-rose-gold-dark)) 
-    drop-shadow(0.5px 1.5px var(--color-rose-gold-light)) 
-    drop-shadow(2px 2px 4px rgb(235, 235, 235))
+    drop-shadow(0px -0.5px 1.5px var(--color-rose-gold-dark)) 
+    drop-shadow(0px 1.5px var(--color-rose-gold-light)) 
+    drop-shadow(2px 2px 4px rgb(255, 255, 255))
     drop-shadow(-2px -2px 3px rgba(0, 0, 0, 0.15));
  --shadow-emboss-silver: 
     drop-shadow(-0.25px -0.75px 1.5px var(--color-silver-dark)) 
     drop-shadow(0.5px 1.5px var(--color-silver-light)) 
-    drop-shadow(2px 2px 4px rgb(235, 235, 235))
+    drop-shadow(2px 2px 4px rgb(255, 255, 255))
     drop-shadow(-2px -2px 3px rgba(0, 0, 0, 0.15));
   --shadow-lift: 
     drop-shadow(0.25px 0.75px -1.5px var(--color-rose-gold-dark)) 
@@ -51,6 +51,8 @@
   --shadow-inset: inset 2px 2px 3px rgba(255, 255, 255, 1), inset -2px -2px 3px rgba(0, 0, 0, 0.1);
   --shadow-card: 0 5px 10px var(--color-shadow);
   --shadow-button: drop-shadow(0 6px 4px rgba(0, 0, 0, 0.3));
+  --shadow-button-light: 0 3px 5px rgba(0, 0, 0, 0.2);
+  --shadow-button-light-hover: 0 5px 8px rgba(0, 0, 0, 0.3);
   --shadow-raised: inset 0 2px 1px rgba(255, 255, 255, 0.5), inset 0 -2px 1px rgba(0, 0, 0, 0.2);
 }
 
@@ -349,13 +351,13 @@ p {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background-color: var(--color-indicator);
+    background-color: var(--color-rose-gold-light);
     border: none;
     cursor: pointer;
     transition: background-color 0.2s;
 }
 .indicator-dot.active {
-    background-color: var(--color-indicator-active);
+    background-color: var(--color-rose-gold-dark);
 }
 
 /* --- General Purpose Buttons --- */
@@ -367,28 +369,58 @@ p {
     border-radius: 50px;
     text-decoration: none;
     background: var(--gradient-conic-rose-gold);
-    box-shadow: var(--shadow-raised);
+    box-shadow: var(--shadow-raised), var(--shadow-button-light);
     color: #fff;
     cursor: pointer;
-    transition: background 0.3s ease-in-out;
+    transition: color 0.5s ease-in-out, box-shadow 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
     
     border: none;
     box-sizing: border-box;
     font-size: 1.1rem;
 }
 
-.btn:hover {
-    background: var(--gradient-conic-rose-gold-alt);
+.btn:hover, .btn-secondary:hover {
+    box-shadow: var(--shadow-raised), var(--shadow-button-light-hover);
 }
+
+.btn::before, .btn-secondary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--gradient-conic-rose-gold-alt);
+    border-radius: 50px;
+    box-shadow: var(--shadow-raised);
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    z-index: -1;
+}
+
+.btn-secondary::before {
+    background: var(--gradient-conic-silver-alt);
+}
+
+.btn:hover::before, .btn-secondary:hover::before {
+    opacity: 1;
+}
+
 
 .btn-secondary {
     background: var(--gradient-conic-silver);
-    box-shadow: var(--shadow-raised);
+    box-shadow: var(--shadow-raised), var(--shadow-button-light);
     color: #000000bd;
+    text-shadow: 0 1px 2px var(--color-silver-light) !important;
 }
-.btn-secondary:hover {
-    background: var(--gradient-conic-silver-alt);
+
+.btn {
+    text-shadow: 1px 1px 3px var(--color-rose-gold-dark);
 }
+
 
 /* --- Media Elements --- */
 .line-image {
@@ -555,7 +587,7 @@ p {
    MEDIA QUERIES
    ========================================================================== */
 
-@media (max-width: 768px) {
+@media (max-width: 920px) {
     h1 { font-size: 3.5rem; margin-bottom: 1rem; }
     h2 { font-size: 2.5rem; margin-bottom: 1rem; }
     h3 { font-size: 1.9rem; }
