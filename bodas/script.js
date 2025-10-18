@@ -1,16 +1,31 @@
+/**
+ * --------------------------------------------------------------------
+ * Main Application Logic
+ * --------------------------------------------------------------------
+ * This script handles the entire lifecycle of the wedding invitation page.
+ * 1. It fetches guest and event data from Google Sheets.
+ * 2. It waits for custom fonts to load to prevent unstyled text.
+ * 3. It parses the invitation code from the URL.
+ * 4. It decrypts and processes the data to dynamically build the page sections.
+ * 5. It sets up navigation, scrolling, and other interactive elements.
+ * 6. It includes error handling and retry mechanisms for robustness.
+ * --------------------------------------------------------------------
+ */
+
+// URLs for the public Google Sheets containing guest and event data.
 const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcjtPM-3LNZFamySSe9rbVOjTu1pRSQ0Te5ILx6MmF9ClbBJUZvnfPHYsIg4_CclD_7ba0lv1QMdiZ/pub?output=csv';
 const eventDataUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcjtPM-3LNZFamySSe9rbVOjTu1pRSQ0Te5ILx6MmF9ClbBJUZvnfPHYsIg4_CclD_7ba0lv1QMdiZ/pub?output=csv&gid=1404690345';
 
 /**
- * Fetches a resource with a specified number of retries.
+ * Fetches a resource with a specified number of retries to handle transient network issues.
  * @param {string} url The URL to fetch.
- * @param {number} retries The number of times to retry on failure.
+ * @param {number} [retries=3] The number of times to retry on failure.
  * @returns {Promise<Response>} A promise that resolves with the response.
  */
 async function fetchWithRetry(url, retries = 3) {
     for (let i = 0; i < retries; i++) {
         try {
-            // Append a timestamp to the URL to prevent caching.
+            // Append a timestamp to the URL to prevent browser caching.
             const response = await fetch(`${url}&_=${Date.now()}`);
             if (response.ok) {
                 return response;
@@ -23,111 +38,50 @@ async function fetchWithRetry(url, retries = 3) {
     throw new Error(`Failed to fetch ${url} after ${retries} attempts.`);
 }
 
-
+/**
+ * Main entry point. Fires after the initial HTML document has been completely loaded and parsed.
+ */
 document.addEventListener('DOMContentLoaded', () => {
     // Wait for all custom fonts to be loaded before processing the data and showing the page.
+    // This prevents a "flash of unstyled text" (FOUT).
     document.fonts.ready.then(async () => {
         try {
-            const guestDataPromise = fetchWithRetry(googleSheetUrl).then(res => res.text());
-            const eventDataPromise = fetchWithRetry(eventDataUrl).then(res => res.text());
+            // Fetch guest and event data concurrently for efficiency.
+            const [guestCsvText, eventCsvText] = await Promise.all([
+                fetchWithRetry(googleSheetUrl).then(res => res.text()),
+                fetchWithRetry(eventDataUrl).then(res => res.text())
+            ]);
 
+            // Get the invitation code from the URL.
             const params = new URLSearchParams(window.location.search);
             const code = params.get('i');
 
-            const guestCsvText = await guestDataPromise;
-            await processGuestData(code, guestCsvText, eventDataPromise);
+            // Process all data and build the page.
+            await processGuestData(code, guestCsvText, eventCsvText);
 
-            // Now that data is processed and sections are visible, remove the loading class.
+            // Now that data is processed and sections are visible, remove the loading class to show the content.
             document.body.classList.remove('fonts-loading');
 
-            // The rest of the setup can proceed.
-            setupSectionAnimations();
+            // Initialize interactive elements.
             setupVerticalScrolling();
         } catch (error) {
             console.error("Fatal Error:", error);
-            // Hide the spinner and show an error message to the user.
+            // If fetching or initial processing fails, show a connection error message.
             const spinner = document.getElementById('loading-spinner');
             if (spinner) spinner.style.display = 'none';
             
             const errorSection = document.querySelector('[data-section="no-code"]');
             if(errorSection) {
-                errorSection.classList.remove('hidden');
-                errorSection.querySelector('h2').textContent = 'Error de conexión';
-                errorSection.querySelector('p').textContent = 'No se pudo cargar la información de la invitación. Por favor, revisá tu conexión a internet y recargá la página.';
+                displayMessage('connection-error-message');
             }
         }
     });
 });
 
-function setupSmartScroll() {
-    const container = document.querySelector('.scroll-container');
-    if (!container) return;
-
-    let sections = [];
-    let currentSection = null;
-    let isThrottled = false;
-    const throttleDuration = 500; // ms
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                currentSection = entry.target;
-            }
-        });
-    }, { root: container, threshold: 0.6 });
-
-    function updateSections() {
-        sections = Array.from(document.querySelectorAll('.scroll-section:not(.hidden)'));
-        sections.forEach(section => observer.observe(section));
-    }
-
-    container.addEventListener('wheel', (e) => {
-        if (!currentSection || isThrottled) {
-            e.preventDefault();
-            return;
-        }
-
-        const scrollableContent = currentSection.querySelector('.scrollable-content');
-        if (!scrollableContent) return;
-
-        const hasVerticalOverflow = scrollableContent.scrollHeight > scrollableContent.clientHeight;
-        const isAtTop = scrollableContent.scrollTop === 0;
-        const isAtBottom = Math.abs(scrollableContent.scrollHeight - scrollableContent.clientHeight - scrollableContent.scrollTop) < 1;
-
-        const delta = e.deltaY;
-
-        if (hasVerticalOverflow) {
-            if ((delta < 0 && !isAtTop) || (delta > 0 && !isAtBottom)) {
-                // Allow default vertical scroll
-                return;
-            }
-        }
-        
-        e.preventDefault();
-        
-        isThrottled = true;
-        setTimeout(() => { isThrottled = false; }, throttleDuration);
-
-        const currentIndex = sections.indexOf(currentSection);
-        if (delta > 0) { // Scrolling down/right
-            if (currentIndex < sections.length - 1) {
-                const nextSection = sections[currentIndex + 1];
-                container.scrollTo({ left: nextSection.offsetLeft, behavior: 'smooth' });
-            }
-        } else { // Scrolling up/left
-            if (currentIndex > 0) {
-                const prevSection = sections[currentIndex - 1];
-                container.scrollTo({ left: prevSection.offsetLeft, behavior: 'smooth' });
-            }
-        }
-    });
-
-    // Initial setup and update on changes
-    updateSections();
-    const mutationObserver = new MutationObserver(updateSections);
-    mutationObserver.observe(document.querySelector('.long-card'), { childList: true, attributes: true });
-}
-
+/**
+ * Sets up the vertical scrolling behavior for each section, including the appearance
+ * of up/down buttons and fade overlays based on scroll position.
+ */
 function setupVerticalScrolling() {
     document.querySelectorAll('.scroll-section').forEach(section => {
         const scrollableContent = section.querySelector('.scrollable-content');
@@ -138,12 +92,13 @@ function setupVerticalScrolling() {
 
         if (!scrollableContent || !upButton || !downButton || !topFade || !bottomFade) return;
 
+        // Checks if the content overflows and adds/removes scroll listeners accordingly.
         const checkOverflow = () => {
             const hasOverflow = scrollableContent.scrollHeight > scrollableContent.clientHeight;
 
             if (hasOverflow) {
                 scrollableContent.addEventListener('scroll', handleScroll);
-                handleScroll(); 
+                handleScroll(); // Initial check
             } else {
                 scrollableContent.removeEventListener('scroll', handleScroll);
                 upButton.classList.remove('visible');
@@ -153,6 +108,7 @@ function setupVerticalScrolling() {
             }
         };
 
+        // Toggles the visibility of buttons and fades based on scroll position.
         const handleScroll = () => {
             const scrollTop = scrollableContent.scrollTop;
             const scrollHeight = scrollableContent.scrollHeight;
@@ -176,43 +132,43 @@ function setupVerticalScrolling() {
             scrollableContent.scrollBy({ top: scrollableContent.clientHeight * 0.8, behavior: 'smooth' });
         });
 
+        // Re-check overflow on resize or content changes.
         const resizeObserver = new ResizeObserver(checkOverflow);
         resizeObserver.observe(scrollableContent);
         
         const mutationObserver = new MutationObserver(checkOverflow);
         mutationObserver.observe(scrollableContent, { childList: true, subtree: true });
 
-        checkOverflow();
+        checkOverflow(); // Initial check
     });
 }
 
-function parseCsvRow(rowString) {
-    const result = [];
-    let currentField = '';
-    let inQuotes = false;
-    for (let i = 0; i < rowString.length; i++) {
-        const char = rowString[i];
-        const nextChar = rowString[i + 1];
-        if (char === '"') {
-            if (inQuotes && nextChar === '"') {
-                currentField += '"';
-                i++;
-            } else {
-                inQuotes = !inQuotes;
-            }
-        } else if (char === ',' && !inQuotes) {
-            result.push(currentField.trim());
-            currentField = '';
-        } else {
-            currentField += char;
-        }
-    }
-    result.push(currentField.trim());
-    return result;
+/**
+ * Parses a CSV string into an array of objects.
+ * @param {string} csvText The raw CSV string.
+ * @returns {Array<Object>} An array of objects, where each object represents a row.
+ */
+function parseCsv(csvText) {
+    const lines = csvText.split('\n').filter(line => line.trim() !== '');
+    if (lines.length < 1) return [];
+
+    const headers = lines[0].split(',').map(h => h.trim());
+    const dataRows = lines.slice(1).map(line => {
+        const values = line.split(',').map(v => v.trim());
+        const rowObject = {};
+        headers.forEach((header, index) => {
+            rowObject[header] = values[index];
+        });
+        return rowObject;
+    });
+    return dataRows;
 }
 
+/**
+ * Sets up the horizontal navigation controls (left/right buttons and indicator dots).
+ */
 function setupNavigation() {
-    const container = document.querySelector('.scroll-container'); // Target the new scrolling container
+    const container = document.querySelector('.scroll-container');
     const sections = Array.from(document.querySelectorAll('.scroll-section'));
     const indicatorContainer = document.querySelector('.indicator-container');
     const leftBtn = document.querySelector('.scroll-h-button.left');
@@ -222,7 +178,8 @@ function setupNavigation() {
         if(indicatorContainer) indicatorContainer.classList.add('hidden');
         return;
     }
-    // If we have more than one section, show the controls
+
+    // Show controls if there are multiple sections.
     if(leftBtn) {
         leftBtn.classList.remove('hidden');
         leftBtn.classList.add('visible');
@@ -236,17 +193,16 @@ function setupNavigation() {
     const scrollToSection = (index) => {
         const targetSection = sections[index];
         if (targetSection) {
-            // Calculate scroll position based on the section's width
             const scrollPosition = index * targetSection.offsetWidth;
             container.scrollTo({ left: scrollPosition, behavior: 'smooth' });
         }
     };
 
-    // Create indicator dots
+    // Create indicator dots from the template.
+    const dotTemplate = document.getElementById('indicator-dot-template');
     indicatorContainer.innerHTML = '';
     sections.forEach((_, index) => {
-        const dot = document.createElement('button');
-        dot.classList.add('indicator-dot');
+        const dot = dotTemplate.content.cloneNode(true).firstElementChild;
         dot.setAttribute('aria-label', `Go to section ${index + 1}`);
         dot.addEventListener('click', () => scrollToSection(index));
         indicatorContainer.appendChild(dot);
@@ -254,7 +210,7 @@ function setupNavigation() {
 
     const dots = indicatorContainer.querySelectorAll('.indicator-dot');
 
-    // Observer to update active state
+    // Use an IntersectionObserver to update the active dot and button states.
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -272,7 +228,7 @@ function setupNavigation() {
 
     sections.forEach(section => observer.observe(section));
 
-    // Button click handlers
+    // Button click handlers.
     leftBtn.addEventListener('click', () => {
         const currentIndex = Math.round(container.scrollLeft / sections[0].offsetWidth);
         if (currentIndex > 0) scrollToSection(currentIndex - 1);
@@ -284,6 +240,11 @@ function setupNavigation() {
     });
 }
 
+/**
+ * Updates the text content of elements to handle singular/plural forms based on a count.
+ * @param {string} type The data attribute prefix (e.g., 'guest', 'event').
+ * @param {number} count The number to check for pluralization.
+ */
 function handlePlurals(type, count) {
     const elements = document.querySelectorAll(`[data-${type}-singular]`);
     if (!elements || elements.length === 0) return;
@@ -295,276 +256,221 @@ function handlePlurals(type, count) {
     });
 }
 
+/**
+ * Injects content from a <template> into the designated message section.
+ * @param {string} templateId The ID of the template to use.
+ */
+function displayMessage(templateId) {
+    const messageTemplate = document.getElementById(templateId);
+    const errorSection = document.querySelector('[data-section="no-code"]');
+    
+    if (messageTemplate && errorSection) {
+        const contentWrapper = errorSection.querySelector('.content-wrapper');
+        const messageContent = messageTemplate.content.cloneNode(true);
+        
+        contentWrapper.innerHTML = ''; // Clear previous content
+        contentWrapper.appendChild(messageContent);
+        errorSection.classList.remove('hidden');
+
+        // Also ensure the main portada is visible with the error.
+        const portada = document.querySelector('[data-section="portada"]');
+        if (portada) {
+            portada.classList.remove('hidden');
+        }
+    }
+}
+
+/**
+ * Safely decrypts a field, handling potential Base64 errors.
+ * @param {string} data The encrypted data string.
+ * @param {string} key The decryption key.
+ * @returns {string|null} The decrypted string, or null if decryption fails.
+ */
 function decryptField(data, key) {
     if (typeof data !== 'string' || !data) {
         return null;
     }
-    // Base64 strings shouldn't contain spaces, but URL encoding or copy-paste errors can introduce them.
+    // Sanitize data that might have been corrupted during URL encoding/decoding.
     const sanitizedData = data.trim().replace(/ /g, '+');
     try {
-        // The atob function will throw an error if the string is not a valid base64 string.
         return XXTEA.decryptFromBase64(sanitizedData, key);
     } catch (e) {
-        // Log the error and the problematic data for debugging.
         console.error(`Failed to decrypt data. Input: "${data}", Sanitized: "${sanitizedData}"`, e);
-        // Return a value that indicates failure but doesn't crash the app.
         return null; 
     }
 }
 
-async function processGuestData(code, csvText, eventDataPromise) {
-    try {
-        const lines = csvText.split('\n').filter(line => line.trim() !== '');
-        const headers = parseCsvRow(lines[0]);
-        const dataRows = lines.slice(1).map(line => parseCsvRow(line));
+/**
+ * The core logic for processing guest data and building the dynamic sections of the invitation.
+ * @param {string} code The invitation code from the URL.
+ * @param {string} csvText The raw CSV string of guest data.
+ * @param {string} eventCsvText The raw CSV string of event data.
+ */
+async function processGuestData(code, csvText, eventCsvText) {
+    const longCard = document.querySelector('.long-card');
+    const sectionTemplate = document.getElementById('scroll-section-template');
 
-        const colIndices = {
-            codigo: headers.indexOf('Codigo'),
-            nombre: headers.indexOf('Nombre'),
-            invitados: headers.indexOf('Invitados'),
-            cantidad: headers.indexOf('Cantidad'),
-            discurso: headers.indexOf('Discurso'), // Renamed from Conferencia
-            recepcion: headers.indexOf('Recepcion'), // Renamed from Fiesta
-            video: headers.indexOf('Video'),       // Renamed from Zoom
-            civil: headers.indexOf('Civil'),
-            eventos: headers.indexOf('Eventos'),
-            confirmacion: headers.indexOf('Confirmado')
-        };
-
-        for (const key in colIndices) {
-            if (colIndices[key] === -1) throw new Error(`Column "${key}" not found.`);
+    /**
+     * Creates a new section from a template and appends it to the page.
+     * @param {string} id The data-section ID for the new section.
+     * @param {string} templateId The ID of the template to use for the content.
+     * @param {boolean} [isVcentered=false] Whether to vertically center the content.
+     * @returns {HTMLElement} The newly created section element.
+     */
+    function createSection(id, templateId, isVcentered = false) {
+        const section = sectionTemplate.content.cloneNode(true).firstElementChild;
+        section.dataset.section = id;
+        const contentWrapper = section.querySelector('.content-wrapper');
+        if(isVcentered) contentWrapper.classList.add('v-center');
+        
+        const template = document.getElementById(templateId);
+        if (template) {
+            contentWrapper.appendChild(template.content.cloneNode(true));
         }
 
-        let guestRow = null;
-        // Only try to find a guest if a code was provided.
+        longCard.appendChild(section);
+        return section;
+    }
+
+    try {
+        const guestData = parseCsv(csvText);
+        let guestInfo = null;
+
+        // Find the matching guest row by decrypting the code.
         if (code) {
-            for (const row of dataRows) {
-                const decryptedCode = decryptField(row[colIndices.codigo], code);
-
+            for (const guest of guestData) {
+                const decryptedCode = decryptField(guest.Codigo, code);
                 if (decryptedCode === code) {
-                    const decryptedNombre = decryptField(row[colIndices.nombre], code);
-                    const decryptedInvitados = decryptField(row[colIndices.invitados], code);
-                    const confirmacion = row[colIndices.confirmacion]; // Read as plain text
-
-                    guestRow = [...row];
-                    guestRow[colIndices.codigo] = decryptedCode;
-                    guestRow[colIndices.nombre] = decryptedNombre;
-                    guestRow[colIndices.invitados] = decryptedInvitados;
-                    guestRow[colIndices.confirmacion] = confirmacion;
+                    guestInfo = { ...guest, Nombre: decryptField(guest.Nombre, code), Invitados: decryptField(guest.Invitados, code) };
                     break;
                 }
             }
         }
 
-        if (guestRow) {
-            document.getElementById('group-name').textContent = `${guestRow[colIndices.nombre]}`;
-            const decryptedInvitados = guestRow[colIndices.invitados] || '';
-            const guestList = decryptedInvitados.split(',').map(name => name.trim()).filter(name => name);
+        // Always create the cover page.
+        createSection('portada', 'portada-template', true);
 
-            if (guestList.length > 0) {
-                let guestListString = "";
-                if (guestList.length === 1) {
-                    guestListString = guestList[0];
-                } else if (guestList.length === 2) {
-                    guestListString = guestList.join(" y ");
-                } else {
-                    guestListString = guestList.slice(0, -1).join(", ") + " y " + guestList.slice(-1);
-                }
-                document.getElementById('guest-names').textContent = guestListString;
-            } else {
-                const guestNamesElement = document.getElementById('guest-names');
-                if (guestNamesElement && guestNamesElement.parentElement) {
-                    guestNamesElement.parentElement.classList.add('hidden');
-                }
-            }
-
-            const guestCount = parseInt(guestRow[colIndices.cantidad], 10) || 0;
-            if (guestCount > 0) {
-                document.getElementById('guest-count').textContent = guestCount;
-            }
-            handlePlurals('guest', guestCount);
-
-            const isInvitedToReception = guestRow[colIndices.recepcion]?.toLowerCase() === 'si';
-
+        if (guestInfo) {
+            // Determine which sections to show based on guest data.
+            const isInvitedToReception = guestInfo.Recepcion?.toLowerCase() === 'si';
             const sectionsToShow = {
-                portada: true,
                 invitacion: true,
-                civil: guestRow[colIndices.civil]?.toLowerCase() === 'si',
-                discurso: guestRow[colIndices.discurso]?.toLowerCase() === 'si',
+                civil: guestInfo.Civil?.toLowerCase() === 'si',
+                discurso: guestInfo.Discurso?.toLowerCase() === 'si',
                 fiesta: isInvitedToReception,
-                zoom: guestRow[colIndices.video]?.toLowerCase() === 'si',
+                video: guestInfo.Video?.toLowerCase() === 'si',
                 rsvp: isInvitedToReception,
                 contratapa: true
             };
 
-            // Handle RSVP status
-            const rsvpStatus = guestRow[colIndices.confirmacion];
-            const rsvpSection = document.querySelector('[data-section="rsvp"]');
-            const rsvpForm = document.getElementById('rsvp-form');
-            const rsvpConfirmedMessage = document.getElementById('rsvp-confirmed-message');
-            const rsvpDeclinedMessage = document.getElementById('rsvp-declined-message');
-
-            if (rsvpStatus === 'Si') {
-                if (rsvpForm) rsvpForm.classList.add('hidden');
-                if (rsvpConfirmedMessage) rsvpConfirmedMessage.classList.remove('hidden');
-            } else if (rsvpStatus === 'No') {
-                if (rsvpForm) rsvpForm.classList.add('hidden');
-                if (rsvpDeclinedMessage) rsvpDeclinedMessage.classList.remove('hidden');
+            if (sectionsToShow.invitacion) {
+                createSection('invitacion', 'invitacion-template');
             }
 
-            // Build the dynamic event list for the invitation section
+            // Populate the dynamic fields in the invitation section.
+            document.getElementById('group-name').textContent = `${guestInfo.Nombre}`;
+            const decryptedInvitados = guestInfo.Invitados || '';
+            const guestList = decryptedInvitados.split(',').map(name => name.trim()).filter(name => name);
+            if (guestList.length > 0) {
+                document.getElementById('guest-names').textContent = guestList.length === 1 ? guestList[0] : guestList.slice(0, -1).join(", ") + " y " + guestList.slice(-1);
+            } else {
+                const el = document.getElementById('guest-names');
+                if(el) el.parentElement.classList.add('hidden');
+            }
+            const guestCount = parseInt(guestInfo.Cantidad, 10) || 0;
+            if (guestCount > 0) document.getElementById('guest-count').textContent = guestCount;
+            handlePlurals('guest', guestCount);
+
+            // Handle RSVP status display.
+            const rsvpStatus = guestInfo.Confirmado;
+            if (rsvpStatus === 'Si') {
+                document.getElementById('rsvp-form').classList.add('hidden');
+                document.getElementById('rsvp-confirmed-message').classList.remove('hidden');
+            } else if (rsvpStatus === 'No') {
+                document.getElementById('rsvp-form').classList.add('hidden');
+                document.getElementById('rsvp-declined-message').classList.remove('hidden');
+            }
+
+            // Build the list of events the guest is invited to.
             const eventList = [];
             if (sectionsToShow.civil) eventList.push("ceremonia civil");
             if (sectionsToShow.discurso) eventList.push("discurso de bodas");
             if (sectionsToShow.fiesta) eventList.push("recepción de bodas");
+            document.getElementById('event-list').textContent = eventList.length === 1 ? eventList[0] : eventList.slice(0, -1).join(", ") + " y " + eventList.slice(-1);
+            handlePlurals('event', eventList.length);
 
-            let eventListString = "";
-            if (eventList.length > 0) {
-                if (eventList.length === 1) {
-                    eventListString = eventList[0];
-                } else if (eventList.length === 2) {
-                    eventListString = eventList.join(" y ");
-                } else {
-                    eventListString = eventList.slice(0, -1).join(", ") + " y " + eventList.slice(-1);
-                }
-            }
-            const eventListElement = document.getElementById('event-list');
-            if(eventListElement) {
-                eventListElement.textContent = eventListString;
-                handlePlurals('event', eventList.length);
-            }
-
-            // Decrypt the event key and fetch event details
-            const encryptedEventKey = guestRow[colIndices.eventos];
+            // Process and create the event-specific sections.
+            const encryptedEventKey = guestInfo.Eventos;
             if (encryptedEventKey) {
                 const eventKey = decryptField(encryptedEventKey, code);
                 if (eventKey) {
-                    const eventCsvText = await eventDataPromise;
-                    await processEventDetails(eventKey, sectionsToShow, eventCsvText);
+                    await processEventDetails(eventKey, sectionsToShow, eventCsvText, createSection);
                 }
             }
-
-            // Setup RSVP form submission
-            const rsvpCodeInput = document.getElementById('rsvp-code-input');
-            const rsvpConfirmationInput = document.getElementById('rsvp-confirmation-input');
-            const rsvpMessage = document.getElementById('rsvp-message');
-            const rsvpIframe = document.getElementById('rsvp-iframe');
-
-            if (rsvpForm && rsvpCodeInput && rsvpConfirmationInput && rsvpMessage && rsvpIframe) {
-                rsvpCodeInput.value = code; // Set the user's code once
-
-                rsvpForm.addEventListener('submit', (event) => {
-                    // Determine which button was clicked
-                    const clickedButton = event.submitter;
-                    if (clickedButton) {
-                        rsvpConfirmationInput.value = clickedButton.value; // 'Si' or 'No'
-                    }
-                    // Show loading spinner
-                    const spinner = document.getElementById('loading-spinner');
-                    if (spinner) {
-                        spinner.style.display = 'flex';
-                        setTimeout(() => {
-                            spinner.style.opacity = '1';
-                        }, 10); // Small delay for transition
-                    }
-                    rsvpMessage.classList.add('hidden'); // Hide previous message
-                });
-
-                rsvpIframe.onload = () => {
-                    // This fires after the form is submitted.
-                    // Wait 5 seconds then reload to show the new status.
-                    setTimeout(() => {
-                        location.reload();
-                    }, 5000);
-                };
+            
+            // Create the back cover page.
+            if (sectionsToShow.contratapa) {
+                createSection('contratapa', 'contratapa-template', true);
             }
-
-            document.querySelectorAll('[data-section]').forEach(item => {
-                if (sectionsToShow[item.dataset.section]) {
-                    item.classList.remove('hidden');
-                } else {
-                    item.remove();
-                }
-            });
 
         } else {
-            // This handles both wrong code and no code scenarios
-            const sectionsToShow = {
-                portada: true,
-                'no-code': true // Show our new section
-            };
-
-            document.querySelectorAll('[data-section]').forEach(item => {
-                if (sectionsToShow[item.dataset.section]) {
-                    item.classList.remove('hidden');
-                } else {
-                    item.remove();
-                }
-            });
+            // If no valid guest code is found, display the "no code" message.
+            const noCodeSection = createSection('no-code', '', true);
+            const messageTemplate = document.getElementById('no-code-message');
+            if(messageTemplate) noCodeSection.querySelector('.content-wrapper').appendChild(messageTemplate.content.cloneNode(true));
         }
 
     } catch (error) {
         console.error('Error processing guest data:', error);
-        // This is a fallback for unexpected errors during data processing.
-        const retryCount = parseInt(sessionStorage.getItem('retryCount') || '0');
-        if (retryCount < 2) {
-            sessionStorage.setItem('retryCount', retryCount + 1);
-            setTimeout(() => location.reload(), 2000); // Wait 2 seconds before reloading
-        } else {
-            sessionStorage.removeItem('retryCount');
-            const errorSection = document.querySelector('[data-section="no-code"]');
-            if(errorSection) {
-                errorSection.classList.remove('hidden');
-                errorSection.querySelector('h2').textContent = 'Error de datos';
-                errorSection.querySelector('p').textContent = 'No se pudo procesar la información de la invitación. Por favor, intentá recargar la página o contactanos.';
-            }
-        }
+        // If there's a data processing error, show the data error message.
+        const errorSection = createSection('no-code', '', true);
+        const messageTemplate = document.getElementById(error.message.includes('fetch') ? 'connection-error-message' : 'data-error-message');
+        if(messageTemplate) errorSection.querySelector('.content-wrapper').appendChild(messageTemplate.content.cloneNode(true));
     } finally {
+        // Hide the spinner and set up navigation once everything is done.
         const spinner = document.getElementById('loading-spinner');
         if (spinner) {
             spinner.style.opacity = '0';
-            setTimeout(() => {
-                spinner.style.display = 'none';
-            }, 500); // Match the CSS transition duration
+            setTimeout(() => { spinner.style.display = 'none'; }, 500);
         }
-        setupNavigation(); // Restore the call
+        setupNavigation();
     }
 }
 
-async function processEventDetails(eventKey, sectionsToShow, csvText) {
+/**
+ * Processes the event data and creates the corresponding sections.
+ * @param {string} eventKey The decrypted key for the event data.
+ * @param {Object} sectionsToShow An object indicating which sections are visible.
+ * @param {string} csvText The raw CSV string of event data.
+ * @param {Function} createSection The function to create a new section.
+ */
+async function processEventDetails(eventKey, sectionsToShow, csvText, createSection) {
     try {
         if (!csvText) throw new Error('Event data is not available.');
-        const lines = csvText.split('\n').filter(line => line.trim() !== '');
-        const headers = parseCsvRow(lines[0]);
-        const dataRows = lines.slice(1).map(line => parseCsvRow(line));
+        const eventData = parseCsv(csvText);
 
-        const colIndices = {
-            evento: headers.indexOf('Evento'),
-            lugar: headers.indexOf('Lugar'),
-            fecha: headers.indexOf('Fecha'),
-            direccion: headers.indexOf('Direccion'),
-            mapa: headers.indexOf('Mapa')
-        };
-
-        for (const row of dataRows) {
-            const encryptedEventName = row[colIndices.evento];
-            if (!encryptedEventName) continue;
-
-            const eventName = decryptField(encryptedEventName, eventKey);
-
-            // Map new event names from the data source to the data-section names in the HTML
-            let sectionName = eventName;
-            if (eventName === 'recepcion') {
-                sectionName = 'fiesta';
-            } else if (eventName === 'video') {
-                sectionName = 'zoom';
+        // Find the video URL first, as it's needed for the 'discurso' section.
+        let videoUrl = '';
+        for (const event of eventData) {
+            if (decryptField(event.Evento, eventKey) === 'video') {
+                videoUrl = decryptField(event.Direccion, eventKey);
+                break;
             }
+        }
+
+        // Create sections for each event the guest is invited to.
+        for (const event of eventData) {
+            const eventName = decryptField(event.Evento, eventKey);
+            if (!eventName || eventName === 'video') continue; // Skip the video event itself from this loop.
+
+            let sectionName = eventName;
+            if (eventName === 'recepcion') sectionName = 'fiesta';
 
             if (sectionName && sectionsToShow[sectionName]) {
-                const decryptedFechaStr = decryptField(row[colIndices.fecha], eventKey) || '';
-                const lugar = decryptField(row[colIndices.lugar], eventKey);
-                const direccion = decryptField(row[colIndices.direccion], eventKey);
-                const mapa = decryptField(row[colIndices.mapa], eventKey);
+                const decryptedFechaStr = decryptField(event.Fecha, eventKey) || '';
+                const lugar = decryptField(event.Lugar, eventKey);
+                const direccion = decryptField(event.Direccion, eventKey);
+                const mapa = decryptField(event.Mapa, eventKey);
 
                 let fecha = '';
                 let hora = '';
@@ -572,121 +478,36 @@ async function processEventDetails(eventKey, sectionsToShow, csvText) {
                 if (decryptedFechaStr) {
                     const dateObj = new Date(decryptedFechaStr);
                     if (!isNaN(dateObj)) {
-                        // Format the date (e.g., Miércoles 19 de noviembre de 2025)
-                        fecha = dateObj.toLocaleDateString('es-AR', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        });
-
-                        // Format the time (e.g., 10:00)
-                        hora = dateObj.toLocaleTimeString('es-AR', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false
-                        });
+                        fecha = dateObj.toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                        hora = dateObj.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
                     }
                 }
 
-                if (document.getElementById(`${sectionName}-fecha`)) {
-                    document.getElementById(`${sectionName}-fecha`).textContent = fecha;
-                }
-                if (document.getElementById(`${sectionName}-hora`)) {
-                    document.getElementById(`${sectionName}-hora`).textContent = hora;
-                }
-                if (document.getElementById(`${sectionName}-lugar`)) {
-                    document.getElementById(`${sectionName}-lugar`).textContent = lugar;
-                }
-                if (document.getElementById(`${sectionName}-direccion`)) {
-                    document.getElementById(`${sectionName}-direccion`).textContent = direccion;
-                }
-                const mapLink = document.getElementById(`${sectionName}-mapa`);
-                if (mapLink && mapa) {
+                // Create the section and populate its dynamic fields.
+                const section = createSection(sectionName, `${sectionName}-template`);
+                section.querySelector('.fecha').textContent = fecha;
+                section.querySelector('.hora').textContent = hora;
+                section.querySelector('.lugar').textContent = lugar;
+                section.querySelector('.direccion').textContent = direccion;
+                const mapLink = section.querySelector('.mapa');
+                if (mapa) {
                     mapLink.href = mapa;
                     mapLink.classList.remove('hidden');
+                }
+
+                // Special handling for the 'discurso' section to include the video.
+                if (sectionName === 'discurso') {
+                    const videoSection = section.querySelector('[data-section="video"]');
+                    if (videoUrl) {
+                        const iframe = videoSection.querySelector('iframe');
+                        iframe.src = videoUrl;
+                    } else {
+                        if (videoSection) videoSection.remove();
+                    }
                 }
             }
         }
     } catch (error) {
         console.error('Error fetching event details:', error);
-        // Optionally, handle errors in fetching event details, e.g., show a message
     }
-}
-
-function setupSectionAnimations() {
-    document.querySelectorAll('.scroll-section').forEach(section => {
-        const video = section.querySelector('.transition-video');
-        const canvas = section.querySelector('.transition-canvas');
-        const watercolorImage = section.querySelector('.watercolor-image');
-        if (!video || !canvas || !watercolorImage) return;
-
-        video.playbackRate = 0.5;
-
-        const ctx = canvas.getContext('2d');
-        let animationFrameId = null;
-        let isFullyVisible = false; // Flag for visibility
-
-        function drawFrame() {
-            if (video.paused || video.ended) {
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                    animationFrameId = null;
-                }
-                return;
-            }
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const dataURL = canvas.toDataURL();
-            watercolorImage.style.maskImage = `url(${dataURL})`;
-            watercolorImage.style.webkitMaskImage = `url(${dataURL})`;
-            animationFrameId = requestAnimationFrame(drawFrame);
-        }
-
-        function initializeFirstFrame() {
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const dataURL = canvas.toDataURL();
-            watercolorImage.style.maskImage = `url(${dataURL})`;
-            watercolorImage.style.webkitMaskImage = `url(${dataURL})`;
-            watercolorImage.style.visibility = 'visible';
-        }
-
-        function advanceAnimation() {
-            if (!isFullyVisible || !video.paused || video.currentTime >= video.duration) {
-                return;
-            }
-
-            video.play();
-            
-            if (!animationFrameId) {
-                animationFrameId = requestAnimationFrame(drawFrame);
-            }
-
-            setTimeout(() => {
-                video.pause();
-            }, 150);
-        }
-
-        video.addEventListener('loadedmetadata', () => {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-        });
-
-        video.addEventListener('canplay', initializeFirstFrame, { once: true });
-
-        section.addEventListener('click', advanceAnimation);
-        section.addEventListener('mousemove', advanceAnimation);
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                isFullyVisible = entry.isIntersecting;
-            });
-        }, { 
-            root: document.querySelector('.scroll-container'),
-            threshold: 1.0 
-        });
-
-        observer.observe(section);
-
-        video.currentTime = 0;
-    });
 }

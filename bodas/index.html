@@ -3,246 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuestra Boda</title>
+    <title>Muriel & Abel</title>
+
+    <!-- Favicon links -->
     <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="favicon-64x64.png">
+    <link rel="icon" type="image/png" sizes="128x128" href="favicon-128x128.png">
+    <link rel="icon" type="image/png" sizes="256x256" href="favicon-256x256.png">
+    <link rel="shortcut icon" href="favicon.ico">
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Overlock:wght@400;700&family=Parisienne&display=swap" rel="stylesheet">
+
+    <!-- Main Stylesheet -->
     <link rel="stylesheet" href="style.css?v=4">
+
     <style>
+        /* Utility class to hide elements */
         .hidden {
             display: none;
         }
     </style>
 </head>
 <body class="fonts-loading">
+
+    <!-- Reusable SVG Icons -->
     <svg style="display: none;">
         <symbol id="arrow-icon" viewBox="0 -960 960 960">
             <path d="M480-491 342-353q-19 20-47 20t-48-20q-19-19-19-47t19-47l185-185q20-20 48.5-20t48.5 20l184 185q20 19 20 47t-20 47q-19 20-47 20t-48-20L480-491Z"/>
         </symbol>
     </svg>
+
+    <!-- Loading Spinner -->
     <div id="loading-spinner">
         <div class="rhombus">
             <div class="circle1"></div>
             <div class="circle2"></div>
         </div>
     </div>
+
+    <!-- Main Scroll Container -->
     <div class="scroll-container">
-        <!-- The long-card is the single, wide element that scrolls -->
         <div class="long-card shadow">
-            
-            <section class="scroll-section" data-section="portada">
-                <div class="fade-overlay top"></div>
-                <div class="scrollable-content">
-                    <div class="content-wrapper v-center">
-                        <h1 class="emboss" >                            
-                            Nuestras bodas
-                        </h1>
-                        
-                        <div class="media-container">
-                            <div class="line-image">
-                                <img src="images/portada-line.webp" style="margin-top: 0vh !important;" alt="">
-                            </div>
-                            <!-- <div class="watercolor-image">
-                                <img src="images/portada-watercolor.webp" alt="">
-                            </div>
-                            <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
-                            <canvas class="hidden transition-canvas"></canvas> -->
-                        </div>
-                        <h3 class="emboss">21 de noviembre de 2025</h2>
-                        
-                        
-                    </div>
-                </div>
-                <div class="fade-overlay bottom"></div>
-                <button class="scroll-v-button up scroll-button-base" aria-label="Scroll Up"><svg class="arrow-svg"><use href="#arrow-icon" /></svg></button>
-                <button class="scroll-v-button down scroll-button-base" aria-label="Scroll Down"><svg class="arrow-svg"><use href="#arrow-icon" /></svg></button>
-            </section>
-
-            <section class="scroll-section hidden" data-section="no-code">
-                <div class="fade-overlay top"></div>
-                <div class="scrollable-content">
-                    <div class="content-wrapper v-center">
-                        <h2>No encontramos tu invitación</h2>
-                        <p>Si fuiste invitado, es posible que no hayas ingresado la dirección correctamente. Por favor, revisá la invitación que te enviamos y usá el enlace que se encuentra allí. Gracias.</p>
-                    </div>
-                </div>
-                <div class="fade-overlay bottom"></div>
-                <button class="scroll-v-button up scroll-button-base" aria-label="Scroll Up"><svg class="arrow-svg"><use href="#arrow-icon" /></svg></button>
-                <button class="scroll-v-button down scroll-button-base" aria-label="Scroll Down"><svg class="arrow-svg"><use href="#arrow-icon" /></svg></button>
-            </section>
-
-            <section class="scroll-section hidden" data-section="invitacion">
-                <div class="fade-overlay top"></div>
-                <div class="scrollable-content">
-                    <div class="content-wrapper">
-                        <!-- <div class="media-container"> -->
-                            <div class="line-image">
-                                <img src="images/invitacion-line.webp" alt="">
-                            </div>
-                            <!-- <div class="watercolor-image">
-                                <img src="images/invitacion-watercolor.webp" alt="">
-                            </div>
-                            <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
-                            <canvas class="hidden transition-canvas"></canvas> -->
-                        <!-- </div> -->
-                        <h3 style="margin-bottom: 0 !important;">Invitación para</h3><h2 class="emboss" style="margin-top: 0 !important;"><span id="group-name"></span></h2>
-                        <p><strong data-guest-singular="Invitado" data-guest-plural="Invitados"></strong>: <span id="guest-names"></span> (<span id="guest-count"></span> <span data-guest-plural="invitados" data-guest-singular="invitado"></span>)</p>
-                        <p>Invitación para <strong><span id="event-list"></span></strong>.</p>
-                        <p>En <span data-event-plural="las páginas siguientes" data-event-singular="la página siguiente"></span> <span data-guest-plural="encontrarán" data-guest-singular="encontrarás"></span> información sobre <span data-event-plural="los eventos" data-event-singular="el evento"></span>.</p>
-                                                
-                        <div class="hidden" data-section="rsvp">
-                            
-                            
-                            <form id="rsvp-form" action="https://docs.google.com/forms/d/e/1FAIpQLSdDEzeFAuX07jbAkmJHPwptyNHilQRdmfduBWLz1aD7_Ps_ZQ/formResponse" method="POST" target="rsvp-iframe">
-                                <h3><span data-guest-plural="Confirmen su" data-guest-singular="Confirmá tu"></span> presencia</h3>
-                                <p>Por favor, <span data-guest-plural="confirmen su" data-guest-singular="confirmá tu"></span> asistencia <strong>antes del 1 de noviembre</strong> (solo para la recepción de bodas).</p>
-                                <input type="hidden" name="entry.641668059" id="rsvp-code-input">
-                                <input type="hidden" name="entry.746146577" id="rsvp-confirmation-input">
-                                <p>
-                                    <button type="submit" id="rsvp-yes-btn" class="btn" value="Si">¡Sí, allí <span data-guest-plural="estaremos" data-guest-singular="estaré"></span>!</button> 
-                                    <button type="submit" id="rsvp-no-btn" class="btn btn-secondary" value="No">No <span data-guest-plural="podremos" data-guest-singular="podré"></span> asistir</button>
-                                </p>
-                            </form>
-                            <div id="rsvp-confirmed-message" class="hidden">
-                                <h3>Ya <span data-guest-plural="confirmaron su" data-guest-singular="confirmaste tu"></span> presencia</h3>
-                                <p>Gracias por confirmar que <span data-guest-plural="vendrán. ¡Los esperamos! Si necesitan cambiar su confirmación, por favor, envienos" data-guest-singular="vendrás. ¡Te esperamos! Si necesitás cambiar tu confirmación, por favor, envianos"></span> un WhatsApp.</p>
-                            </div>
-                            <div id="rsvp-declined-message" class="hidden">
-                                <h3>Nos <span data-guest-plural="informaron que no vendrán." data-guest-singular="informaste que no vendrás."></span></h3>
-                                <p>Lamentamos que no <span data-guest-plural="puedan" data-guest-singular="puedas"></span> acompañarnos. ¡Gracias por hacérnoslo saber!</p>
-                            </div>
-                            <div id="rsvp-message" class="hidden">¡Gracias por confirmar <span data-guest-plural="su" data-guest-singular="tu"></span> asistencia!</div>
-                            <iframe name="rsvp-iframe" id="rsvp-iframe" style="display:none;"></iframe>
-
-                        </div>
-                        <h3>Más información</h3>
-                        <p>Para conocer mejor cómo van a ser nuestras bodas, <span data-guest-plural="los" data-guest-singular="te"></span> invitamos a leer el siguiente artículo de JW.org: <a href="https://www.jw.org/finder?srcid=jwlshare&wtlocale=S&prefer=lang&docid=501400102" target="_blank">¿Cómo son las bodas de los testigos de Jehová?</a> </p>
-                    </div>
-                </div>
-                <div class="fade-overlay bottom"></div>
-                <button class="scroll-v-button up scroll-button-base" aria-label="Scroll Up"><svg class="arrow-svg"><use href="#arrow-icon" /></svg></button>
-                <button class="scroll-v-button down scroll-button-base" aria-label="Scroll Down"><svg class="arrow-svg"><use href="#arrow-icon" /></svg></button>
-            </section>
-
-            <section class="scroll-section hidden" data-section="civil">
-                <div class="fade-overlay top"></div>
-                <div class="scrollable-content">
-                    <div class="content-wrapper">
-                        <!-- <div class="media-container"> -->
-                            <div class="line-image">
-                                <img src="images/civil-line.webp" alt="">
-                            </div>
-                            <!-- <div class="watercolor-image">
-                                <img src="images/civil-watercolor.webp" alt="">
-                            </div>
-                            <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
-                            <canvas class="hidden transition-canvas"></canvas> -->
-                        <!-- </div> -->
-                        <h2 class="emboss">Ceremonia civil</h2>
-                        <p><strong>Fecha:</strong> <span id="civil-fecha"></span></p>
-                        <p><strong>Hora:</strong> <span id="civil-hora"></span></p>
-                        <p><strong>Lugar:</strong> <span id="civil-lugar"></span></p>
-                        <p><strong>Dirección:</strong> <span id="civil-direccion"></span></p><p>
-                        <a id="civil-mapa" href="#" target="_blank" class="btn hidden">Ver en el mapa</a></p>
-                    </div>
-                </div>
-                <div class="fade-overlay bottom"></div>
-                <button class="scroll-v-button up scroll-button-base" aria-label="Scroll Up"><svg class="arrow-svg"><use href="#arrow-icon" /></svg></button>
-                <button class="scroll-v-button down scroll-button-base" aria-label="Scroll Down"><svg class="arrow-svg"><use href="#arrow-icon" /></svg></button>
-            </section>
-
-            <section class="scroll-section hidden" data-section="discurso">
-                <div class="fade-overlay top"></div>
-                <div class="scrollable-content">
-                    <div class="content-wrapper">
-                        <div class="media-container">
-                            <div class="line-image">
-                                <img src="images/discurso-line.webp" alt="">
-                            </div>
-                            <!-- <div class="watercolor-image">
-                                <img src="images/discurso-watercolor.webp" alt="">
-                            </div>
-                            <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
-                            <canvas class="hidden transition-canvas"></canvas> -->
-                        </div>
-                        <h2 class="emboss">Discurso de bodas</h2>
-                        <p><strong>Fecha:</strong> <span id="discurso-fecha"></span></p>
-                        <p><strong>Hora:</strong> <span id="discurso-hora"></span></p>
-                        <p><strong>Lugar:</strong> <span id="discurso-lugar"></span></p>
-                        <p><strong>Dirección:</strong> <span id="discurso-direccion"></span></p>
-                        <a id="discurso-mapa" href="#" target="_blank" class="btn hidden">Ver en el mapa</a>
-                        <div class="hidden" data-section="zoom">
-                            <h3>Transmisión en vivo</h3>
-                            <div class="video-container">
-                                <iframe src="https://www.youtube.com/embed/i7qjVCv5XWc?modestbranding=1&rel=0&iv_load_policy=3&hl=es-ar" frameborder="0" allowfullscreen></iframe>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="fade-overlay bottom"></div>
-                <button class="scroll-v-button up scroll-button-base" aria-label="Scroll Up"><svg class="arrow-svg"><use href="#arrow-icon" /></svg></button>
-                <button class="scroll-v-button down scroll-button-base" aria-label="Scroll Down"><svg class="arrow-svg"><use href="#arrow-icon" /></svg></button>
-            </section>
-
-            <section class="scroll-section hidden" data-section="fiesta">
-                <div class="fade-overlay top"></div>
-                <div class="scrollable-content">
-                    <div class="content-wrapper">
-                        <div class="media-container">
-                            <div class="line-image">
-                                <img src="images/fiesta-line.webp" alt="">
-                            </div>
-                            <!-- <div class="watercolor-image">
-                                <img src="images/fiesta-watercolor.webp" alt="">
-                            </div>
-                            <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
-                            <canvas class="hidden transition-canvas"></canvas> -->
-                        </div>
-                        <h2 class="emboss">Recepción de bodas</h2>
-                        <p><strong>Fecha:</strong> <span id="fiesta-fecha"></span></p>
-                        <p><strong>Hora:</strong> <span id="fiesta-hora"></span></p>
-                        <p><strong>Lugar:</strong> <span id="fiesta-lugar"></span></p>
-                        <p><strong>Dirección:</strong> <span id="fiesta-direccion"></span></p>
-                        <a id="fiesta-mapa" href="#" target="_blank" class="btn hidden">Ver en el mapa</a>
-                    </div>
-                </div>
-                <div class="fade-overlay bottom"></div>
-                <button class="scroll-v-button up scroll-button-base" aria-label="Scroll Up"><svg class="arrow-svg"><use href="#arrow-icon" /></svg></button>
-                <button class="scroll-v-button down scroll-button-base" aria-label="Scroll Down"><svg class="arrow-svg"><use href="#arrow-icon" /></svg></button>
-            </section>
-            
-            <section class="scroll-section hidden" data-section="contratapa">
-                <div class="fade-overlay top"></div>
-                <div class="scrollable-content">
-                    <div class="content-wrapper  v-center">
-                        <div class="media-container">
-                            <div class="line-image">
-                                <img src="images/contratapa-line.webp" alt="">
-                            </div>
-                            <!-- <div class="watercolor-image">
-                                <img src="images/contratapa-watercolor.webp" alt="">
-                            </div>
-                            <video class="hidden transition-video" src="images/transition.mp4" muted playsinline preload="auto"></video>
-                            <canvas class="hidden transition-canvas"></canvas> -->
-                        </div>
-                        
-                        <h3 class="emboss">Muriel y Abel</h3>
-                    </div>
-                </div>
-                <div class="fade-overlay bottom"></div>
-                <button class="scroll-v-button up scroll-button-base" aria-label="Scroll Up"><svg class="arrow-svg"><use href="#arrow-icon" /></svg></button>
-                <button class="scroll-v-button down scroll-button-base" aria-label="Scroll Down"><svg class="arrow-svg"><use href="#arrow-icon" /></svg></button>
-            </section>
+            <!-- Scroll sections will be dynamically inserted here by script.js -->
         </div>
     </div>
 
-
-
+    <!-- Horizontal Navigation -->
     <button class="scroll-h-button left hidden scroll-button-base" aria-label="Previous Section"><svg class="arrow-svg"><use href="#arrow-icon" /></svg></button>
     <button class="scroll-h-button right hidden scroll-button-base" aria-label="Next Section"><svg class="arrow-svg"><use href="#arrow-icon" /></svg></button>
     <div class="indicator-container hidden"></div>
 
+    <!-- TEMPLATES: Used by script.js to generate dynamic content -->
+
+    <!-- Template for a single indicator dot in the horizontal navigation. -->
+    <template id="indicator-dot-template">
+        <button class="indicator-dot" aria-label="Go to section"></button>
+    </template>
+
+    <!-- Template for the message shown when the invitation code is not found. -->
+    <template id="no-code-message">
+        <h2>No encontramos tu invitación</h2>
+        <p>Si fuiste invitado, es posible que no hayas ingresado la dirección correctamente. Por favor, revisá la invitación que te enviamos y usá el enlace que se encuentra allí. Gracias.</p>
+    </template>
+
+    <!-- Template for the message shown on a network or data fetching error. -->
+    <template id="connection-error-message">
+        <h2>Error de conexión</h2>
+        <p>No se pudo cargar la información de la invitación. Por favor, revisá tu conexión a internet y recargá la página.</p>
+    </template>
+
+    <!-- Template for the message shown on a data processing or decryption error. -->
+    <template id="data-error-message">
+        <h2>Error de datos</h2>
+        <p>No se pudo procesar la información de la invitación. Por favor, intentá recargar la página o contactanos.</p>
+    </template>
+
+    <!-- Template for the base structure of a scrollable section. -->
+    <template id="scroll-section-template">
+        <section class="scroll-section">
+            <div class="fade-overlay top"></div>
+            <div class="scrollable-content">
+                <div class="content-wrapper">
+                    <!-- Section content goes here -->
+                </div>
+            </div>
+            <div class="fade-overlay bottom"></div>
+            <button class="scroll-v-button up scroll-button-base" aria-label="Scroll Up"><svg class="arrow-svg"><use href="#arrow-icon" /></svg></button>
+            <button class="scroll-v-button down scroll-button-base" aria-label="Scroll Down"><svg class="arrow-svg"><use href="#arrow-icon" /></svg></button>
+        </section>
+    </template>
+
+    <!-- Template for the content of the cover page section. -->
+    <template id="portada-template">
+        <h1 class="emboss">Nuestra boda</h1>
+        <div class="media-container">
+            <div class="line-image">
+                <img src="images/portada-line.webp" style="margin-top: 0vh !important;" alt="">
+            </div>
+        </div>
+        <h3 class="emboss">21 de noviembre de 2025</h3>
+    </template>
+
+    <!-- Template for the main invitation section content. -->
+    <template id="invitacion-template">
+        <div class="line-image">
+            <img src="images/invitacion-line.webp" alt="">
+        </div>
+        <h3 style="margin-bottom: 0 !important;">Invitación para</h3><h2 class="emboss" style="margin-top: 0 !important;"><span id="group-name"></span></h2>
+        <p><strong data-guest-singular="Invitado" data-guest-plural="Invitados"></strong>: <span id="guest-names"></span> (<span id="guest-count"></span> <span data-guest-plural="invitados" data-guest-singular="invitado"></span>)</p>
+        <p>Invitación para <strong><span id="event-list"></span></strong>.</p>
+        <p>En <span data-event-plural="las páginas siguientes" data-event-singular="la página siguiente"></span> <span data-guest-plural="encontrarán" data-guest-singular="encontrarás"></span> información sobre <span data-event-plural="los eventos" data-event-singular="el evento"></span>.</p>
+        <div data-section="rsvp">
+            <form id="rsvp-form" action="https://docs.google.com/forms/d/e/1FAIpQLSdDEzeFAuX07jbAkmJHPwptyNHilQRdmfduBWLz1aD7_Ps_ZQ/formResponse" method="POST" target="rsvp-iframe">
+                <h3><span data-guest-plural="Confirmen su" data-guest-singular="Confirmá tu"></span> presencia</h3>
+                <p>Por favor, <span data-guest-plural="confirmen su" data-guest-singular="confirmá tu"></span> asistencia <strong>antes del 1 de noviembre</strong> (solo para la recepción de bodas).</p>
+                <input type="hidden" name="entry.641668059" id="rsvp-code-input">
+                <input type="hidden" name="entry.746146577" id="rsvp-confirmation-input">
+                <p>
+                    <button type="submit" id="rsvp-yes-btn" class="btn" value="Si">¡Sí, allí <span data-guest-plural="estaremos" data-guest-singular="estaré"></span>!</button> 
+                    <button type="submit" id="rsvp-no-btn" class="btn btn-secondary" value="No">No <span data-guest-plural="podremos" data-guest-singular="podré"></span> asistir</button>
+                </p>
+            </form>
+            <div id="rsvp-confirmed-message" class="hidden">
+                <h3>Ya <span data-guest-plural="confirmaron su" data-guest-singular="confirmaste tu"></span> presencia</h3>
+                <p>Gracias por confirmar que <span data-guest-plural="vendrán. ¡Los esperamos! Si necesitan cambiar su confirmación, por favor, envienos" data-guest-singular="vendrás. ¡Te esperamos! Si necesitás cambiar tu confirmación, por favor, envianos"></span> un WhatsApp.</p>
+            </div>
+            <div id="rsvp-declined-message" class="hidden">
+                <h3>Nos <span data-guest-plural="informaron que no vendrán." data-guest-singular="informaste que no vendrás."></span></h3>
+                <p>Lamentamos que no <span data-guest-plural="puedan" data-guest-singular="puedas"></span> acompañarnos. ¡Gracias por hacérnoslo saber!</p>
+            </div>
+            <div id="rsvp-message" class="hidden">¡Gracias por confirmar <span data-guest-plural="su" data-guest-singular="tu"></span> asistencia!</div>
+            <iframe name="rsvp-iframe" id="rsvp-iframe" style="display:none;"></iframe>
+        </div>
+        <h3>Más información</h3>
+        <p>Para conocer mejor cómo van a ser nuestras bodas, <span data-guest-plural="los" data-guest-singular="te"></span> invitamos a leer el siguiente artículo de JW.org: <a href="https://www.jw.org/finder?srcid=jwlshare&wtlocale=S&prefer=lang&docid=501400102" target="_blank">¿Cómo son las bodas de los testigos de Jehová?</a> </p>
+    </template>
+
+    <!-- Template for the Civil Ceremony section. -->
+    <template id="civil-template">
+        <div class="line-image"><img src="images/civil-line.webp" alt=""></div>
+        <h2 class="emboss">Ceremonia civil</h2>
+        <p><strong>Fecha:</strong> <span class="fecha"></span></p>
+        <p><strong>Hora:</strong> <span class="hora"></span></p>
+        <p><strong>Lugar:</strong> <span class="lugar"></span></p>
+        <p><strong>Dirección:</strong> <span class="direccion"></span></p>
+        <a href="#" target="_blank" class="btn mapa hidden">Ver en el mapa</a>
+    </template>
+
+    <!-- Template for the Wedding Discourse section. -->
+    <template id="discurso-template">
+        <div class="media-container"><div class="line-image"><img src="images/discurso-line.webp" alt=""></div></div>
+        <h2 class="emboss">Discurso de bodas</h2>
+        <p><strong>Fecha:</strong> <span class="fecha"></span></p>
+        <p><strong>Hora:</strong> <span class="hora"></span></p>
+        <p><strong>Lugar:</strong> <span class="lugar"></span></p>
+        <p><strong>Dirección:</strong> <span class="direccion"></span></p>
+        <a href="#" target="_blank" class="btn mapa hidden">Ver en el mapa</a>
+        <div data-section="video">
+            <h3>Transmisión en vivo</h3>
+            <div class="video-container">
+                <iframe src="" frameborder="0" allowfullscreen></iframe>
+            </div>
+        </div>
+    </template>
+
+    <!-- Template for the Wedding Reception section. -->
+    <template id="fiesta-template">
+        <div class="media-container"><div class="line-image"><img src="images/fiesta-line.webp" alt=""></div></div>
+        <h2 class="emboss">Recepción de bodas</h2>
+        <p><strong>Fecha:</strong> <span class="fecha"></span></p>
+        <p><strong>Hora:</strong> <span class="hora"></span></p>
+        <p><strong>Lugar:</strong> <span class="lugar"></span></p>
+        <p><strong>Dirección:</strong> <span class="direccion"></span></p>
+        <a href="#" target="_blank" class="btn mapa hidden">Ver en el mapa</a>
+    </template>
+
+    <!-- Template for the back cover page section. -->
+    <template id="contratapa-template">
+        <div class="media-container">
+            <div class="line-image">
+                <img src="images/contratapa-line.webp" alt="">
+            </div>
+        </div>
+        <h3 class="emboss">Muriel y Abel</h3>
+    </template>
+
+    <!-- Scripts -->
     <script src="xxtea.js"></script>
     <script src="script.js?v=4"></script>
 </body>
