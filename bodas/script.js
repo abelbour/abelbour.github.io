@@ -290,12 +290,15 @@ function decryptField(data, key) {
     if (typeof data !== 'string' || !data) {
         return null;
     }
-    // Sanitize data that might have been corrupted during URL encoding/decoding.
+    // Base64 strings shouldn't contain spaces, but URL encoding or copy-paste errors can introduce them.
     const sanitizedData = data.trim().replace(/ /g, '+');
     try {
+        // The atob function will throw an error if the string is not a valid base64 string.
         return XXTEA.decryptFromBase64(sanitizedData, key);
     } catch (e) {
+        // Log the error and the problematic data for debugging.
         console.error(`Failed to decrypt data. Input: "${data}", Sanitized: "${sanitizedData}"`, e);
+        // Return a value that indicates failure but doesn't crash the app.
         return null; 
     }
 }
