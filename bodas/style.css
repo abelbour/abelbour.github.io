@@ -29,6 +29,10 @@
   --gradient-emboss: linear-gradient(var(--gradient-angle), var(--color-rose-gold-dark) 5%, var(--color-rose-gold-light) 50%, var(--color-rose-gold-dark) 95%);
   --gradient-fade-top: linear-gradient(to bottom, rgba(240, 233, 228, 1) 0%, rgba(240, 233, 228, 0) 100%);
   --gradient-fade-bottom: linear-gradient(to top, rgba(240, 233, 228, 1) 0%, rgba(240, 233, 228, 0) 100%);
+  --gradient-conic-silver: conic-gradient(from 135deg at 50% 50%, var(--color-silver-light) 0deg, var(--color-silver-dark) 90deg, var(--color-silver-light) 180deg, var(--color-silver-dark) 270deg, var(--color-silver-light) 360deg);
+  --gradient-conic-rose-gold: conic-gradient(from 45deg at 50% 50%, var(--color-rose-gold-light) 0deg, var(--color-rose-gold-dark) 90deg, var(--color-rose-gold-light) 180deg, var(--color-rose-gold-dark) 270deg, var(--color-rose-gold-light) 360deg);
+  --gradient-conic-silver-alt: conic-gradient(from 180deg at 50% 50%, var(--color-silver-light) 0deg, var(--color-silver-dark) 90deg, var(--color-silver-light) 180deg, var(--color-silver-dark) 270deg, var(--color-silver-light) 360deg);
+  --gradient-conic-rose-gold-alt: conic-gradient(from 90deg at 50% 50%, var(--color-rose-gold-light) 0deg, var(--color-rose-gold-dark) 90deg, var(--color-rose-gold-light) 180deg, var(--color-rose-gold-dark) 270deg, var(--color-rose-gold-light) 360deg);
 
   /* Effects */
   --shadow-emboss: 
@@ -44,9 +48,10 @@
   --shadow-lift: 
     drop-shadow(0.25px 0.75px -1.5px var(--color-rose-gold-dark)) 
     drop-shadow(-0.5px -1.5px var(--color-rose-gold-light));
-  --shadow-inset: inset 2px 2px 5px rgba(255, 255, 255, 1), inset -2px -2px 5px rgba(0, 0, 0, 0.1);
+  --shadow-inset: inset 2px 2px 3px rgba(255, 255, 255, 1), inset -2px -2px 3px rgba(0, 0, 0, 0.1);
   --shadow-card: 0 5px 10px var(--color-shadow);
-  --shadow-button: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  --shadow-button: drop-shadow(0 6px 4px rgba(0, 0, 0, 0.3));
+  --shadow-raised: inset 0 2px 1px rgba(255, 255, 255, 0.5), inset 0 -2px 1px rgba(0, 0, 0, 0.2);
 }
 
 /* Custom property for gradient animation */
@@ -208,8 +213,9 @@ p {
 
 /* --- Scroll Buttons (Base) --- */
 .scroll-button-base {
-    background: var(--gradient-silver);
-    border: 1px solid #e0d7ce;
+    position: relative; /* Needed for pseudo-element positioning */
+    background: var(--gradient-conic-silver);
+    border: 0px solid #e0d7ce;
     border-radius: 50%;
     width: 50px;
     height: 50px;
@@ -220,26 +226,30 @@ p {
     justify-content: center;
     align-items: center;
     filter: var(--shadow-button);
+    box-shadow: var(--shadow-raised);
+    overflow: hidden; /* Hide the pseudo-element overflow */
 }
-.scroll-button-base {
-    background: var(--gradient-silver);
-    border: 1px solid #e0d7ce;
+
+.scroll-button-base::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--gradient-conic-rose-gold-alt);
     border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    font-size: 1.5rem;
-    color: var(--color-white-alpha);
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    filter: var(--shadow-button);
+    box-shadow: var(--shadow-raised);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.scroll-button-base:hover::before {
+    opacity: 1;
 }
 
 .arrow-svg {
     width: 24px;
     height: 24px;
     fill: var(--color-rose-gold-dark);
+    transition: fill 0.3s ease-in-out;
 }
 
 .scroll-v-button.down .arrow-svg {
@@ -255,7 +265,7 @@ p {
 }
 
 .scroll-button-base:hover {
-    background: var(--gradient-rose-gold);
+    background: var(--gradient-conic-rose-gold);
 }
 
 .scroll-button-base:hover .arrow-svg {
@@ -356,27 +366,28 @@ p {
     margin: 1.5rem;
     border-radius: 50px;
     text-decoration: none;
-    background: var(--gradient-rose-gold);
+    background: var(--gradient-conic-rose-gold);
+    box-shadow: var(--shadow-raised);
     color: #fff;
     cursor: pointer;
     transition: background 0.3s ease-in-out;
-    filter: var(--shadow-emboss);
+    
     border: none;
     box-sizing: border-box;
     font-size: 1.1rem;
 }
 
 .btn:hover {
-    background: var(--gradient-rose-gold-hover);
+    background: var(--gradient-conic-rose-gold-alt);
 }
 
 .btn-secondary {
-    background: var(--gradient-silver);
-    color: #757575;
-    filter: var(--shadow-emboss-silver);
+    background: var(--gradient-conic-silver);
+    box-shadow: var(--shadow-raised);
+    color: #000000bd;
 }
 .btn-secondary:hover {
-    background: var(--gradient-silver-hover);
+    background: var(--gradient-conic-silver-alt);
 }
 
 /* --- Media Elements --- */
