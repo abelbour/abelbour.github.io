@@ -27,8 +27,6 @@
   --gradient-silver: linear-gradient(45deg, var(--color-silver-dark) 5%, var(--color-silver-light) 50%, var(--color-silver-dark) 95%);
   --gradient-silver-hover: linear-gradient(90deg, var(--color-silver-dark) 5%, var(--color-silver-light) 50%, var(--color-silver-dark) 95%);
   --gradient-emboss: linear-gradient(var(--gradient-angle), var(--color-rose-gold-dark) 5%, var(--color-rose-gold-light) 50%, var(--color-rose-gold-dark) 95%);
-  --gradient-fade-top: linear-gradient(to bottom, rgba(240, 233, 228, 1) 0%, rgba(240, 233, 228, 0) 100%);
-  --gradient-fade-bottom: linear-gradient(to top, rgba(240, 233, 228, 1) 0%, rgba(240, 233, 228, 0) 100%);
   --gradient-conic-silver: conic-gradient(from 45deg at 50% 50%, var(--color-silver-light) 0deg, var(--color-silver-dark) 90deg, var(--color-silver-light) 180deg, var(--color-silver-dark) 270deg, var(--color-silver-light) 360deg);
   --gradient-conic-rose-gold: conic-gradient(from 45deg at 50% 50%, var(--color-rose-gold-light) 0deg, var(--color-rose-gold-dark) 90deg, var(--color-rose-gold-light) 180deg, var(--color-rose-gold-dark) 270deg, var(--color-rose-gold-light) 360deg);
   --gradient-conic-silver-alt: conic-gradient(from 90deg at 50% 50%, var(--color-silver-light) 0deg, var(--color-silver-dark) 90deg, var(--color-silver-light) 180deg, var(--color-silver-dark) 270deg, var(--color-silver-light) 360deg);
@@ -67,7 +65,11 @@
    BASE STYLES
    ========================================================================== */
 
-body, html {
+html {
+    height: 100%;
+}
+
+body {
     height: 100%;
     margin: 0;
     padding: 0;
@@ -75,6 +77,8 @@ body, html {
     background-color: var(--color-bg);
     font-family: var(--font-primary);
     color: var(--color-text);
+    display: flex;
+    flex-direction: column;
 }
 
 .fonts-loading .scroll-container {
@@ -90,12 +94,13 @@ a {
    ========================================================================== */
 
 .scroll-container {
+    flex: 1;
+    min-height: 0;
     width: 100%;
-    height: 100%;
     display: flex;
     align-items: center;
     overflow-x: auto;
-    overflow-y: hidden;
+    overflow-y: visible; /* Allow shadows to be visible */
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
     
@@ -111,7 +116,7 @@ a {
     width: 640vw;
     height: 85vh; /* Adjust height to prevent cropping and leave space */
     display: flex;
-    margin: 5vh 10vw 10vh 10vw; /* Push the card up to create space for the indicator */
+    margin: auto 10vw; /* Center the card vertically and apply horizontal margins */
     box-shadow: var(--shadow-card);
     background-color: var(--color-card-bg);
     background-image: url('images/paper.webp');
@@ -126,7 +131,6 @@ a {
     justify-content: center;
     text-align: center;
     position: relative;
-    overflow: hidden;
     box-shadow: var(--shadow-inset);
 }
 
@@ -199,18 +203,22 @@ p {
     position: absolute;
     left: 0;
     right: 0;
-    height: 40px;
+    height: 60px; /* Increased height for a smoother fade */
     pointer-events: none;
     transition: opacity 0.3s;
-    mix-blend-mode: multiply;
+    background-image: url('images/paper.webp');
+    background-color: var(--color-card-bg);
+    z-index: 2;
 }
 .fade-overlay.top {
     top: 0;
-    background: var(--gradient-fade-top);
+    mask-image: linear-gradient(to bottom, black 20%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent 100%);
 }
 .fade-overlay.bottom {
     bottom: 0;
-    background: var(--gradient-fade-bottom);
+    mask-image: linear-gradient(to top, black 20%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to top, black 20%, transparent 100%);
 }
 
 /* --- Scroll Buttons (Base) --- */
@@ -252,6 +260,8 @@ p {
     height: 24px;
     fill: var(--color-rose-gold-dark);
     transition: fill 0.3s ease-in-out;
+    position: relative;
+    z-index: 1;
 }
 
 .scroll-v-button.down .arrow-svg {
@@ -266,9 +276,7 @@ p {
     transform: rotate(90deg);
 }
 
-.scroll-button-base:hover {
-    background: var(--gradient-conic-rose-gold);
-}
+
 
 .scroll-button-base:hover .arrow-svg {
     fill: var(--color-silver-light);
@@ -278,20 +286,21 @@ p {
 .scroll-v-button {
     position: absolute;
     left: 50%;
-    transform: translateX(-50%);
     z-index: 3;
     transition: opacity 0.3s, visibility 0.3s;
     opacity: 0;
     visibility: hidden;
 }
 .scroll-v-button.up {
-    top: 10px;
+    top: 0;
+    transform: translate(-50%, -50%);
 }
 .scroll-v-button.up.visible {
     animation: bounce-up 2s infinite;
 }
 .scroll-v-button.down {
-    bottom: 10px;
+    bottom: 0;
+    transform: translate(-50%, 50%);
 }
 .scroll-v-button.down.visible {
     animation: bounce-down 2s infinite;
@@ -338,13 +347,10 @@ p {
 
 /* --- Page Indicators --- */
 .indicator-container {
-    position: fixed;
-    bottom: 3vh; /* Position relative to viewport height for responsive scaling */
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
     display: flex;
+    justify-content: center;
     gap: 10px;
+    padding: 1vh 0;
 }
 
 .indicator-dot {
@@ -446,6 +452,8 @@ p {
     max-width: 100%;
     background: #000;
     margin: 1.5rem 0;
+    border-radius: 15px;
+    box-shadow: var(--shadow-raised), var(--shadow-card);
 }
 
 .video-container iframe {
@@ -454,6 +462,7 @@ p {
     left: 0;
     width: 100%;
     height: 100%;
+    border-radius: 15px;
 }
 
 
@@ -537,13 +546,13 @@ p {
 }
 
 @keyframes bounce-up {
-  0%, 100% { transform: translate(-50%, 0); }
-  50% { transform: translate(-50%, -5px); }
+  0%, 100% { transform: translate(-50%, -50%); }
+  50% { transform: translate(-50%, calc(-50% - 5px)); }
 }
 
 @keyframes bounce-down {
-  0%, 100% { transform: translate(-50%, 0); }
-  50% { transform: translate(-50%, 5px); }
+  0%, 100% { transform: translate(-50%, 50%); }
+  50% { transform: translate(-50%, calc(50% + 5px)); }
 }
 
 @keyframes bounce-left {
@@ -604,5 +613,11 @@ p {
     .line-image img {
         max-height: 25vh;
         margin-top: -4vh;
+    }
+    .scroll-v-button.up {
+        top: 20px;
+    }
+    .scroll-v-button.down {
+        bottom: 20px;
     }
 }
