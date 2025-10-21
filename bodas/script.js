@@ -241,6 +241,55 @@ function setupNavigation() {
 }
 
 /**
+ * Sets up the RSVP form by adding click listeners to the confirmation buttons
+ * to populate hidden fields, show a spinner, and reload the page after submission.
+ * @param {Object} guestInfo The guest's data object from the spreadsheet.
+ * @param {string} code The short invitation code from the URL.
+ */
+function setupRsvpForm(guestInfo, code) {
+    const form = document.getElementById('rsvp-form');
+    if (!form) return;
+
+    const codeInput = document.getElementById('rsvp-code-input');
+    const confirmationInput = document.getElementById('rsvp-confirmation-input');
+    const yesBtn = document.getElementById('rsvp-yes-btn');
+    const noBtn = document.getElementById('rsvp-no-btn');
+    const spinner = document.getElementById('loading-spinner');
+
+    if (!codeInput || !confirmationInput || !yesBtn || !noBtn || !spinner) return;
+
+    // The short invitation code from the URL is used to identify the guest in the Google Form.
+    codeInput.value = code;
+
+    const handleRsvpClick = (event) => {
+        // Prevent the default form submission to handle it manually.
+        event.preventDefault();
+
+        // Set the confirmation value based on which button was clicked.
+        confirmationInput.value = event.currentTarget.value;
+
+        // Show the spinner.
+        spinner.style.display = 'flex';
+        setTimeout(() => {
+            spinner.style.opacity = '1';
+        }, 10); // Timeout allows the display property to apply before the transition starts.
+
+        // Submit the form to the hidden iframe.
+        form.submit();
+
+        // Wait 10 seconds, then reload the page to show the updated status.
+        setTimeout(() => {
+            const url = new URL(window.location);
+            url.searchParams.set('t', Date.now()); // Add cache-busting parameter
+            window.location.href = url.href;
+        }, 10000);
+    };
+
+    yesBtn.addEventListener('click', handleRsvpClick);
+    noBtn.addEventListener('click', handleRsvpClick);
+}
+
+/**
  * Updates the text content of elements to handle singular/plural forms based on a count.
  * @param {string} type The data attribute prefix (e.g., 'guest', 'event').
  * @param {number} count The number to check for pluralization.
@@ -392,6 +441,9 @@ async function processGuestData(code, csvText, eventCsvText) {
             } else if (rsvpStatus === 'No') {
                 document.getElementById('rsvp-form').classList.add('hidden');
                 document.getElementById('rsvp-declined-message').classList.remove('hidden');
+            } else {
+                // If the guest has not yet RSVP'd, set up the form.
+                setupRsvpForm(guestInfo, code);
             }
 
             // Build the list of events the guest is invited to.
