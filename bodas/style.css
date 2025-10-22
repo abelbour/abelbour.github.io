@@ -435,7 +435,7 @@ p {
     width: 100%;
 }
 .line-image img {
-    mix-blend-mode: multiply;
+    /* mix-blend-mode: multiply; */
     max-height: 35vh;
     width: 100%;
     height: auto;
