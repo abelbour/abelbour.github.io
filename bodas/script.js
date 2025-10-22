@@ -408,6 +408,7 @@ async function processGuestData(code, csvText, eventCsvText) {
             const sectionsToShow = {
                 invitacion: true,
                 civil: guestInfo.Civil?.toLowerCase() === 'si',
+                'civil-recepcion': guestInfo.Civil?.toLowerCase() === 'si', // Add this line
                 discurso: guestInfo.Discurso?.toLowerCase() === 'si',
                 fiesta: isInvitedToReception,
                 video: guestInfo.Video?.toLowerCase() === 'si',
@@ -516,39 +517,26 @@ async function processEventDetails(eventKey, sectionsToShow, csvText, createSect
         // Create sections for each event the guest is invited to.
         for (const event of eventData) {
             const eventName = decryptField(event.Evento, eventKey);
-            if (!eventName || eventName === 'video') continue; // Skip the video event itself from this loop.
+            if (!eventName || eventName === 'video') continue;
+
+            // Special handling for civil-recepcion, which is inside the 'civil' section.
+            if (eventName === 'civil-recepcion') {
+                if (sectionsToShow[eventName]) {
+                    const civilSection = document.querySelector('.scroll-section[data-section="civil"]');
+                    const container = civilSection?.querySelector('[data-section="civil-recepcion"]');
+                    if (container) {
+                        populateEventSection(container, event, eventKey);
+                    }
+                }
+                continue; // Move to the next event.
+            }
 
             let sectionName = eventName;
             if (eventName === 'recepcion') sectionName = 'fiesta';
 
             if (sectionName && sectionsToShow[sectionName]) {
-                const decryptedFechaStr = decryptField(event.Fecha, eventKey) || '';
-                const lugar = decryptField(event.Lugar, eventKey);
-                const direccion = decryptField(event.Direccion, eventKey);
-                const mapa = decryptField(event.Mapa, eventKey);
-
-                let fecha = '';
-                let hora = '';
-
-                if (decryptedFechaStr) {
-                    const dateObj = new Date(decryptedFechaStr);
-                    if (!isNaN(dateObj)) {
-                        fecha = dateObj.toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-                        hora = dateObj.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
-                    }
-                }
-
-                // Create the section and populate its dynamic fields.
                 const section = createSection(sectionName, `${sectionName}-template`);
-                section.querySelector('.fecha').textContent = fecha;
-                section.querySelector('.hora').textContent = hora;
-                section.querySelector('.lugar').textContent = lugar;
-                section.querySelector('.direccion').textContent = direccion;
-                const mapLink = section.querySelector('.mapa');
-                if (mapa) {
-                    mapLink.href = mapa;
-                    mapLink.classList.remove('hidden');
-                }
+                populateEventSection(section, event, eventKey);
 
                 // Special handling for the 'discurso' section to include the video.
                 if (sectionName === 'discurso') {
@@ -564,5 +552,40 @@ async function processEventDetails(eventKey, sectionsToShow, csvText, createSect
         }
     } catch (error) {
         console.error('Error fetching event details:', error);
+    }
+}
+
+/**
+ * Populates the date, time, location, and map link for a given event section.
+ * @param {HTMLElement} container The section element to populate.
+ * @param {Object} event The event data object.
+ * @param {string} eventKey The decryption key.
+ */
+function populateEventSection(container, event, eventKey) {
+    const decryptedFechaStr = decryptField(event.Fecha, eventKey) || '';
+    const lugar = decryptField(event.Lugar, eventKey);
+    const direccion = decryptField(event.Direccion, eventKey);
+    const mapa = decryptField(event.Mapa, eventKey);
+
+    let fecha = '';
+    let hora = '';
+
+    if (decryptedFechaStr) {
+        const dateObj = new Date(decryptedFechaStr);
+        if (!isNaN(dateObj)) {
+            fecha = dateObj.toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            hora = dateObj.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
+        }
+    }
+
+    // Query within the provided container.
+    container.querySelector('.fecha').textContent = fecha;
+    container.querySelector('.hora').textContent = hora;
+    container.querySelector('.lugar').textContent = lugar;
+    container.querySelector('.direccion').textContent = direccion;
+    const mapLink = container.querySelector('.mapa');
+    if (mapa) {
+        mapLink.href = mapa;
+        mapLink.classList.remove('hidden');
     }
 }
