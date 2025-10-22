@@ -434,6 +434,14 @@ async function processGuestData(code, csvText, eventCsvText) {
             if (guestCount > 0) document.getElementById('guest-count').textContent = guestCount;
             handlePlurals('guest', guestCount);
 
+            // Show the RSVP section only if the guest is invited to the reception.
+            if (sectionsToShow.rsvp) {
+                const rsvpSection = document.querySelector('[data-section="invitacion"] [data-section="rsvp"]');
+                if (rsvpSection) {
+                    rsvpSection.classList.remove('hidden');
+                }
+            }
+
             // Handle RSVP status display.
             const rsvpStatus = guestInfo.Confirmado;
             if (rsvpStatus === 'Si') {
