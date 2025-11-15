@@ -578,11 +578,29 @@ function populateEventSection(container, event, eventKey) {
     let fecha = '';
     let hora = '';
 
+    const timezoneSpan = container.querySelector('.timezone');
+    if (timezoneSpan) {
+        timezoneSpan.textContent = '';
+        timezoneSpan.classList.add('hidden'); // Hide by default
+    }
+
     if (decryptedFechaStr) {
         const dateObj = new Date(decryptedFechaStr);
         if (!isNaN(dateObj)) {
             fecha = dateObj.toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             hora = dateObj.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+            if (timezoneSpan) {
+                const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                const location = userTimeZone.split('/').pop().replace(/_/g, ' ');
+                timezoneSpan.textContent = ` (hora de ${location})`;
+
+                if (location.includes('Buenos Aires')) {
+                    timezoneSpan.classList.add('hidden');
+                } else {
+                    timezoneSpan.classList.remove('hidden');
+                }
+            }
         }
     }
 
