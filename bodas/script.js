@@ -595,7 +595,10 @@ function populateEventSection(container, event, eventKey) {
                 const location = userTimeZone.split('/').pop().replace(/_/g, ' ');
                 timezoneSpan.textContent = ` (hora de ${location})`;
 
-                if (location.includes('Buenos Aires')) {
+                const hiddenLocations = ['Buenos Aires', 'Cordoba', 'Salta', 'Jujuy', 'Tucuman', 'Catamarca', 'La Rioja', 'San Juan', 'Mendoza', 'San Luis', 'Rio Gallegos', 'Ushuaia', 'Rosario'];
+                const shouldHide = hiddenLocations.some(hiddenLocation => location.includes(hiddenLocation));
+
+                if (shouldHide) {
                     timezoneSpan.classList.add('hidden');
                 } else {
                     timezoneSpan.classList.remove('hidden');
