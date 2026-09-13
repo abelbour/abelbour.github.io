@@ -1,0 +1,1 @@
+{"background_color": "#0b0e14", "description": "Monitoreo del Asistente de Estacionamiento para Cochera", "display": "standalone", "icons": [{"purpose": "any", "sizes": "any", "src": "icon.svg", "type": "image/svg+xml"}], "name": "Cochera", "short_name": "Cochera", "start_url": "./index.html", "theme_color": "#0b0e14"}

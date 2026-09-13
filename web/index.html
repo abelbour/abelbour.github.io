@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0e14" />
+  <meta name="description" content="Monitoreo del Asistente de Estacionamiento para Cochera (ESPHome)" />
+  <title>Cochera · Asistente de Estacionamiento</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    // Tema inicial: preferencia guardada o sistema (evita flash)
+    (function () {
+      try {
+        var t = localStorage.getItem("cochera_theme") || "auto";
+        if (t !== "auto") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <span class="title-wrap"><i class="material-symbols-outlined title-icon">garage_door</i><strong id="garageName">Cochera</strong></span>
+      <div class="topbar-actions">
+        <button id="connPill" class="pill" title="Estado de conexión — clic para detalles">
+          <span class="dot"></span><span id="connText">Conectando…</span>
+        </button>
+        <button id="txrxBtn" class="txrx" title="Actividad — TX envía, RX recibe. Clic para detalles">
+          <span class="txrx-row"><span class="led-label">TX</span><span id="txLed" class="status-led led-tx"></span></span>
+          <span class="txrx-row"><span class="led-label">RX</span><span id="rxLed" class="status-led led-rx"></span></span>
+        </button>
+        <button id="menuBtn" class="icon-btn" title="Menú" aria-label="Menú" aria-haspopup="menu">
+          <i class="material-symbols-outlined">more_vert</i>
+        </button>
+        <div id="menu" class="menu" role="menu" hidden>
+          <button role="menuitem" id="mConn"><i class="material-symbols-outlined">wifi</i>Conexión <span id="menuConnState" class="muted"></span></button>
+          <button role="menuitem" id="mLog"><i class="material-symbols-outlined">terminal</i>Registro</button>
+          <button role="menuitem" id="mSys"><i class="material-symbols-outlined">info</i>Sistema</button>
+          <button role="menuitem" id="mAdv"><i class="material-symbols-outlined">science</i>Estado avanzado</button>
+          <button role="menuitem" id="mShare"><i class="material-symbols-outlined">qr_code_2</i>Compartir</button>
+          <button role="menuitem" id="mTheme"><i class="material-symbols-outlined">contrast</i>Tema</button>
+          <button role="menuitem" id="mConfig"><i class="material-symbols-outlined">tune</i>Configuración</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <canvas id="matrix" width="256" height="64"></canvas>
+    <svg id="garageSvg" viewBox="-17 0 337 460" role="img" aria-label="Esquema cenital de la cochera"></svg>
+    <div class="modeline"><span id="modeBadge" class="badge">—</span></div>
+  </main>
+
+  <!-- Diálogo de configuración -->
+  <dialog id="configDialog" aria-label="Configuración">
+    <article>
+      <header>
+        <h2><i class="material-symbols-outlined">tune</i> Configuración</h2>
+        <button id="configClose" class="icon-btn" title="Cerrar" aria-label="Cerrar">✕</button>
+      </header>
+      <div id="configBody">
+        <h3>Umbrales de distancia</h3>
+        <div id="cfgDistancia"></div>
+        <h3>Alineación lateral</h3>
+        <div id="cfgLateral"></div>
+        <div class="switch-row">
+          <label for="swPoste"><strong>Alerta Poste Lateral</strong><small>Alterna alineación con STOP</small></label>
+          <input type="checkbox" role="switch" id="swPoste" />
+        </div>
+        <h3>Dimensiones (solo esquema)</h3>
+        <div id="cfgDims"></div>
+        <h3>Pantalla</h3>
+        <label for="ledColorSel">Color de LED <small>(solo esta vista)</small></label>
+        <select id="ledColorSel" aria-label="Color de LED">
+          <option value="azul">Azul</option>
+          <option value="rojo">Rojo</option>
+          <option value="verde">Verde</option>
+          <option value="blanco">Blanco</option>
+          <option value="ambar">Ámbar</option>
+        </select>
+        <p class="warn" id="cfgWarn" hidden></p>
+        <h3>Cochera</h3>
+        <label for="nameInput">Nombre <small>(barra superior y pestaña)</small></label>
+        <div class="row-inline">
+          <input type="text" id="nameInput" maxlength="64" autocomplete="off" />
+          <button id="nameSaveBtn">Guardar</button>
+        </div>
+        <p class="warn" id="nameWarn" hidden></p>
+      </div>
+    </article>
+  </dialog>
+
+  <!-- Registro del equipo -->
+  <dialog id="logDialog" aria-label="Registro">
+    <article>
+      <header>
+        <h2><i class="material-symbols-outlined">terminal</i> Registro</h2>
+        <button id="logClose" class="icon-btn" title="Cerrar" aria-label="Cerrar">✕</button>
+      </header>
+      <pre id="logPre" aria-live="off">— sin mensajes —</pre>
+      <button id="clearLog" class="secondary small">Limpiar</button>
+    </article>
+  </dialog>
+
+  <!-- Diálogo de conexión -->
+  <dialog id="connDialog" aria-label="Conexión">
+    <article>
+      <header>
+        <h2><i class="material-symbols-outlined">wifi</i> Conexión</h2>
+        <button id="connClose" class="icon-btn" title="Cerrar" aria-label="Cerrar">✕</button>
+      </header>
+      <p>Estado: <strong id="connState">—</strong></p>
+      <div id="triedList" class="tried"></div>
+      <label for="newUrl">Agregar dirección <small>(ej: 192.168.1.50)</small></label>
+      <div class="row-inline">
+        <input type="text" id="newUrl" placeholder="garage.local o IP" autocomplete="off" />
+        <button id="addUrlBtn">Agregar</button>
+      </div>
+      <div class="row-inline">
+        <select id="subnetSel" aria-label="Subred">
+          <option value="192.168.1">192.168.1.x</option>
+          <option value="192.168.0">192.168.0.x</option>
+          <option value="10.0.0">10.0.0.x</option>
+        </select>
+        <button id="scanBtn" class="secondary">Escanear red</button>
+      </div>
+      <div id="scanResults"></div>
+      <details>
+        <summary>Permiso de contenido inseguro (HTTPS → equipo local)</summary>
+        <div id="browserHelp"></div>
+      </details>
+    </article>
+  </dialog>
+
+  <!-- Estado avanzado: modo prueba + reinicio -->
+  <dialog id="advDialog" aria-label="Estado avanzado">
+    <article>
+      <header>
+        <h2><i class="material-symbols-outlined">science</i> Estado avanzado</h2>
+        <button id="advClose" class="icon-btn" title="Cerrar" aria-label="Cerrar">✕</button>
+      </header>
+      <h3>Modo de prueba</h3>
+      <label for="testModeSel">Forzar estado en la matriz</label>
+      <select id="testModeSel" aria-label="Modo de prueba">
+        <option>Automático</option>
+        <option>READY</option>
+        <option>Retroceso</option>
+        <option>Alineación centrada</option>
+        <option>Alineación corregir izq</option>
+        <option>Alineación corregir der</option>
+        <option>Aproximación Normal</option>
+        <option>Aproximación Precaución</option>
+        <option>Aproximación Alerta</option>
+        <option>STOP</option>
+        <option>Peligro Poste</option>
+        <option>Inactividad</option>
+        <option>Manual</option>
+      </select>
+      <p class="small muted">Fuerza un estado con valores sintéticos; los sensores se congelan.
+        Volvé a <strong>Automático</strong> para retomar la operación normal
+        (al reiniciar el equipo siempre arranca en Automático).</p>
+      <div class="kv"><span>Estado forzado</span><strong id="advTestState">Automático</strong></div>
+      <div id="manualBox" hidden>
+        <h3>Distancias manuales <small class="muted">(0 = sin eco)</small></h3>
+        <p class="small muted">Solo con <strong>Manual</strong>: se evalúa la máquina de estados
+          real con estas distancias (los sensores siguen congelados).</p>
+        <div id="cfgManual"></div>
+      </div>
+      <p class="warn small" id="advMsg" hidden></p>
+      <h3>Equipo</h3>
+      <div class="row-inline">
+        <button id="advRebootBtn" class="secondary">Reiniciar equipo</button>
+      </div>
+      <p class="small muted">Se pierde la conexión unos segundos. Equivale al botón
+        <strong>Reiniciar</strong> de la interfaz propia del equipo.</p>
+    </article>
+  </dialog>
+
+  <!-- Estado del sistema -->
+  <dialog id="sysDialog" aria-label="Estado del sistema">
+    <article>
+      <header>
+        <h2><i class="material-symbols-outlined">info</i> Sistema</h2>
+        <button id="sysClose" class="icon-btn" title="Cerrar" aria-label="Cerrar">✕</button>
+      </header>
+      <h3>Red</h3>
+      <div class="kv"><span>IP</span><strong id="sysIP">—</strong></div>
+      <div class="kv"><span>Red WiFi</span><strong id="sysSSID">—</strong></div>
+      <div class="kv"><span>Señal</span><strong id="sysWifi">—</strong></div>
+      <div class="kv"><span>BSSID</span><strong id="sysBSSID" class="mono">—</strong></div>
+      <div class="kv"><span>MAC</span><strong id="sysMAC" class="mono">—</strong></div>
+      <h3>Equipo</h3>
+      <div class="kv"><span>ESPHome</span><strong id="sysVer">—</strong></div>
+      <div class="kv"><span>Firmware</span><strong id="sysFw">—</strong></div>
+      <div class="kv"><span>Encendido hace</span><strong id="sysUp">—</strong></div>
+      <div class="kv"><span>Motivo reinicio</span><strong id="sysReset">—</strong></div>
+      <div class="kv"><span>CPU</span><strong id="sysCpu">—</strong></div>
+      <h3>Memoria</h3>
+      <div class="kv"><span>Heap libre</span><strong id="sysHeap">—</strong></div>
+      <div class="kv"><span>Bloque máx</span><strong id="sysBlock">—</strong></div>
+      <div class="kv"><span>Fragmentación</span><strong id="sysFrag">—</strong></div>
+      <div class="kv"><span>Loop</span><strong id="sysLoop">—</strong></div>
+      <h3>App</h3>
+      <div class="kv"><span>Mensajes</span><strong id="sysMsgs">0</strong></div>
+      <div class="kv"><span>Latencia</span><strong id="sysLat">—</strong></div>
+      <button id="fwOpenBtn" class="secondary">Actualizar firmware…</button>
+    </article>
+  </dialog>
+
+  <!-- Actualización de firmware -->
+  <dialog id="fwDialog" aria-label="Actualizar firmware">
+    <article>
+      <header>
+        <h2><i class="material-symbols-outlined">memory</i> Firmware</h2>
+        <button id="fwClose" class="icon-btn" title="Cerrar" aria-label="Cerrar">✕</button>
+      </header>
+      <div class="kv"><span>Instalado</span><strong id="fwInstalled">—</strong></div>
+      <div class="kv"><span>Último publicado</span><strong id="fwLatest">—</strong></div>
+      <div id="fwAlert"></div>
+      <label for="fwFile">Archivo .bin <small>(compilado con el mismo YAML)</small></label>
+      <input type="file" id="fwFile" accept=".bin" />
+      <button id="fwUploadBtn">Subir al equipo</button>
+      <div id="fwProg" hidden>
+        <progress id="fwBar" value="0" max="100"></progress>
+        <p class="small" id="fwStatus"></p>
+      </div>
+      <p class="warn small">No desconectar durante la subida. El equipo se reinicia solo. Requiere estar en la misma red.</p>
+    </article>
+  </dialog>
+
+  <!-- Diálogo compartir -->
+  <dialog id="shareDialog" aria-label="Compartir">    <article class="center">
+      <header>
+        <h2><i class="material-symbols-outlined">qr_code_2</i> Compartir</h2>
+        <button id="shareClose" class="icon-btn" title="Cerrar" aria-label="Cerrar">✕</button>
+      </header>
+      <canvas id="qrCanvas" width="180" height="180"></canvas>
+      <p class="small muted" id="shareUrl"></p>
+    </article>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    }
+  </script>
+</body>
+</html>
